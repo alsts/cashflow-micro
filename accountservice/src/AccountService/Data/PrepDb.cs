@@ -3,6 +3,7 @@ using System.Linq;
 using AccountService.Models;
 using AccountService.Util.Enums;
 using AccountService.Util.Helpers;
+using AccountService.Util.Helpers.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,11 +17,11 @@ namespace AccountService.Data
             using var serviceScope = app.ApplicationServices.CreateScope();
 
             var appDbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
-            var passwordHasher = serviceScope.ServiceProvider.GetService<PasswordHasher>();
+            var passwordHasher = serviceScope.ServiceProvider.GetService<IPasswordHasher>();
             SeedData(appDbContext, passwordHasher, isProd);
         }
 
-        private static void SeedData(AppDbContext context, PasswordHasher passwordHasher, bool isProd)
+        private static void SeedData(AppDbContext context, IPasswordHasher passwordHasher, bool isProd)
         {
 
             if (isProd)
