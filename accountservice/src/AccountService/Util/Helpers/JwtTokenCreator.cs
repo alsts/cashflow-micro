@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AccountService.Models;
+using AccountService.Util.Enums;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AccountService.Util.Helpers
@@ -23,7 +24,7 @@ namespace AccountService.Util.Helpers
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Role, user.RoleId.ToString())
+                new Claim(ClaimTypes.Role, Enum.GetName(typeof(Roles),user.RoleId)!)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Secret));

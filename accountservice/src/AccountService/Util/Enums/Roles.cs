@@ -4,6 +4,6 @@ namespace AccountService.Util.Enums
     {
         User = 1,
         Admin = 2,
-        SuperAdmin = 3 
+        SuperAdmin = 3
     }
 }
