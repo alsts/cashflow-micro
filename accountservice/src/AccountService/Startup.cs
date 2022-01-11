@@ -1,22 +1,23 @@
 using System;
 using System.Text;
-using System.Threading.Tasks;
 using AccountService.Data;
-using AccountService.Middleware;
 using AccountService.Services;
 using AccountService.Services.interfaces;
 using AccountService.Util;
+using AccountService.Util.DataObjects;
 using AccountService.Util.Helpers;
 using AccountService.Util.Helpers.Interfaces;
+using AccountService.Util.Jwt;
+using AccountService.Util.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -25,12 +26,17 @@ namespace AccountService
     public class Startup
     {
         private readonly IWebHostEnvironment env;
+        private readonly ILogger<Startup> logger;
         public IConfiguration Configuration { get; }
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
             this.env = env;
+            
+            // startup logger:
+            var loggerFactory = LoggerFactory.Create(Utils.ConfigureLogs);
+            logger = loggerFactory.CreateLogger<Startup>();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -38,15 +44,15 @@ namespace AccountService
         {
             if (env.IsProduction())
             {
-                Console.WriteLine("---> Using MsSql Db");
-                services.AddDbContext<AppDbContext>(opt => 
-                    opt.UseSqlServer(Configuration.GetConnectionString("AccountsConn"))); 
+                logger.LogInformation("---> Using MsSql Db");
+                services.AddDbContext<AppDbContext>(opt =>
+                    opt.UseSqlServer(Configuration.GetConnectionString("AccountsConn")));
             }
             else
             {
-                Console.WriteLine("---> Using inMem Db");
-                services.AddDbContext<AppDbContext>(opt => 
-                    opt.UseInMemoryDatabase("InMem"));  
+                logger.LogInformation("---> Using inMem Db");
+                services.AddDbContext<AppDbContext>(opt =>
+                    opt.UseInMemoryDatabase("InMem"));
             }
 
             var jwtSettings = new JwtSettings();
@@ -76,17 +82,7 @@ namespace AccountService
                         ClockSkew = jwtSettings.Expire
                     };
                     options.SaveToken = true;
-                    options.Events = new JwtBearerEvents
-                    {
-                        OnMessageReceived = context => {
-                            if (context.Request.Cookies.ContainsKey("X-Access-Token"))
-                            {
-                                context.Token = context.Request.Cookies["X-Access-Token"];
-                            }
-                            return Task.CompletedTask;
-                        }
-                    };
-                    // options.EventsType = typeof(CustomJwtBearerEvents);
+                    options.EventsType = typeof(CustomJwtBearerEvents);
                 })
                 .AddCookie(options =>
                 {
@@ -94,7 +90,7 @@ namespace AccountService
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.Cookie.IsEssential = true;
                 });
-            
+
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -102,17 +98,14 @@ namespace AccountService
             services.AddControllers();
             services.AddScoped<LoggedInUserDataHolder>();
             services.AddScoped<CustomJwtBearerEvents>();
-            
+
             // configure DI for application services
             services.AddHttpContextAccessor();
-            
+
             // register automapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "AccountService", Version = "v1" });
-            });
+
+            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "AccountService", Version = "v1" }); });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -125,32 +118,23 @@ namespace AccountService
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AccountService v1"));
             }
 
+            app.UseHttpsRedirection();
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            
             // global cors policy
             app.UseCors(x => x
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader());
             
-            app.UseHttpsRedirection();
-            app.UseRouting();
-            app.UseAuthentication();
-            app.UseAuthorization();
-            
-            // exceptions:
-            app.UseExceptionHandler(a => a.Run(async context =>
-            {
-                var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-                var exception = exceptionHandlerPathFeature.Error;
-                await context.Response.WriteAsJsonAsync(new { error = exception.Message });
-            }));
+            // global exceptions handler
+            app.UseMiddleware<ErrorHandlerMiddleware>();
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
-            
             // db seeder
-            PrepDb.PrepPopulation(app, env.IsProduction());
+            PrepDb.PrepPopulation(app, logger, env.IsProduction());
         }
     }
 }

@@ -2,43 +2,42 @@ using System;
 using System.Linq;
 using AccountService.Models;
 using AccountService.Util.Enums;
-using AccountService.Util.Helpers;
 using AccountService.Util.Helpers.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AccountService.Data
 {
     public static class PrepDb
     {
-        public static void PrepPopulation(IApplicationBuilder app, bool isProd)
+        public static void PrepPopulation(IApplicationBuilder app, ILogger<Startup> logger, bool isProd)
         {
             using var serviceScope = app.ApplicationServices.CreateScope();
-
             var appDbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
             var passwordHasher = serviceScope.ServiceProvider.GetService<IPasswordHasher>();
-            SeedData(appDbContext, passwordHasher, isProd);
+            SeedData(appDbContext, passwordHasher, logger, isProd);
         }
 
-        private static void SeedData(AppDbContext context, IPasswordHasher passwordHasher, bool isProd)
+        private static void SeedData(AppDbContext context, IPasswordHasher passwordHasher, ILogger<Startup> logger, bool isProd)
         {
 
             if (isProd)
             {
-                Console.WriteLine("---> Applying migrations");
+                logger.LogInformation("---> Applying migrations");
                 try
                 {
                     context.Database.Migrate();
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"---> Migrations failed to apply {e.Message}");
+                    logger.LogError("---> Migrations failed to apply");
                 }
             }
             
-            Console.WriteLine("---> Seeding data");
-
+            logger.LogInformation("---> Seeding data");
+            
             if (!context.Roles.Any())
             {
                 var roleUser = new Role
@@ -115,10 +114,6 @@ namespace AccountService.Data
 
                 context.Users.AddRange(superAdminUser, adminUser, user);
                 context.SaveChanges();
-            }
-            else
-            {
-                Console.WriteLine("---> We already have data");
             }
         }
     }

@@ -5,6 +5,7 @@ using AccountService.Models;
 using AccountService.Services.interfaces;
 using AccountService.Util.Enums;
 using AccountService.Util.Helpers;
+using AccountService.Util.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -39,7 +40,10 @@ namespace AccountService.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("ping")]
-        public string Ping() => "pong";
+        public string Ping()
+        {
+            return "pong";
+        }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [AuthorizeRoles(Roles.Admin, Roles.SuperAdmin)]

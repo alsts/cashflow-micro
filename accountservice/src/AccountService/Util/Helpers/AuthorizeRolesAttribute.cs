@@ -9,7 +9,7 @@ namespace AccountService.Util.Helpers
     {
         public AuthorizeRolesAttribute(params Roles[] allowedRoles)
         {
-            var allowedRolesAsStrings = allowedRoles.Select(x => Enum.GetName(typeof(Roles), x));
+            var allowedRolesAsStrings = allowedRoles.Select(roleId => ((int) roleId).ToString());
             Roles = string.Join(",", allowedRolesAsStrings);
         }
     }
