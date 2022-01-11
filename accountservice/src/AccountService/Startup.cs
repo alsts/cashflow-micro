@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using AccountService.Data;
+using AccountService.Middlewares;
 using AccountService.Services;
 using AccountService.Services.interfaces;
 using AccountService.Util;
@@ -11,6 +12,7 @@ using AccountService.Util.Jwt;
 using AccountService.Util.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -117,11 +119,13 @@ namespace AccountService
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AccountService v1"));
             }
+            
+            // requests logging middleware
+            app.UseMiddleware<RequestLoggingMiddleware>();
 
+            // routing
             app.UseHttpsRedirection();
             app.UseRouting();
-            app.UseAuthentication();
-            app.UseAuthorization();
             
             // global cors policy
             app.UseCors(x => x
@@ -129,7 +133,11 @@ namespace AccountService
                 .AllowAnyMethod()
                 .AllowAnyHeader());
             
-            // global exceptions handler
+            // authentication
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            // global exception handler
             app.UseMiddleware<ErrorHandlerMiddleware>();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 

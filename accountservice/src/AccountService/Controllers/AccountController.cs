@@ -21,9 +21,8 @@ namespace AccountService.Controllers
         private readonly JwtTokenCreator jwtCreator;
         private readonly IUserService userService;
 
-        public AccountController(ILogger<AccountController> logger, JwtTokenCreator jwtCreator, IUserService userService)
+        public AccountController(JwtTokenCreator jwtCreator, IUserService userService)
         {
-            this.logger = logger;
             this.jwtCreator = jwtCreator;
             this.userService = userService;
         }
@@ -33,7 +32,6 @@ namespace AccountService.Controllers
         {
             var user = await userService.SignIn(model);
             var token = jwtCreator.GenerateForUser(user);
-            logger.LogInformation("User sign in");
             AppendAuthCookies(user, token);
             return Ok(user);
         }
