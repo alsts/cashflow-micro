@@ -8,6 +8,7 @@ namespace AccountService.Data
     {
         Task<IEnumerable<User>> GetAll();
         Task<User> GetById(int id);
+        Task<User> GetByPublicId(string publicId);
         Task<User> GetUserByEmail(string email);
         Task<User> GetUserByUsername(string username);
         Task Save(User user);

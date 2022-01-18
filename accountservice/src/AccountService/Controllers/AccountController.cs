@@ -1,20 +1,19 @@
-using System;
+using System.Linq;
 using System.Threading.Tasks;
 using AccountService.Dtos;
-using AccountService.Models;
 using AccountService.Services.interfaces;
 using AccountService.Util.Enums;
 using AccountService.Util.Helpers;
 using AccountService.Util.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace AccountService.Controllers
 {
     [ApiController]
+    [Route("account")]
     public class AccountController : ControllerBase
     {
         private readonly ILogger<AccountController> logger;
@@ -28,26 +27,24 @@ namespace AccountService.Controllers
         }
 
         [HttpPost("signin")]
-        public async Task<IActionResult> LoginApi([FromBody] UserSignInDto model)
+        public async Task<IActionResult> SignIn([FromBody] UserSignInDto model)
         {
             var user = await userService.SignIn(model);
             var token = jwtCreator.GenerateForUser(user);
-            AppendAuthCookies(user, token);
-            return Ok(user);
+            Response.AppendAuthCookies(user, token);
+            return Ok(user.ToPublicDto());
         }
-
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet("ping")]
-        public string Ping()
+        
+        [HttpPost("signup")]
+        public async Task<IActionResult> SignUp([FromBody] UserSignUpDto model)
         {
-            return "pong";
+            var user = await userService.SignUp(model);
+            var token = jwtCreator.GenerateForUser(user);
+            Response.AppendAuthCookies(user, token);
+            return Ok(user.ToPublicDto());
         }
-
+        
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [AuthorizeRoles(Roles.Admin, Roles.SuperAdmin)]
-        [HttpGet("ping2")]
-        public string Ping2() => "pong";
-
         [HttpGet("refresh")]
         public async Task<IActionResult> Refresh()
         {
@@ -62,16 +59,41 @@ namespace AccountService.Controllers
 
             var token = jwtCreator.GenerateForUser(user);
             await userService.UpdateRefreshToken(user);
-
-            AppendAuthCookies(user, token);
+            Response.AppendAuthCookies(user, token);
             return Ok();
         }
-
-        private void AppendAuthCookies(User user, string token)
+        
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("")]
+        public async Task<IActionResult> GetCurrent()
         {
-            Response.Cookies.Append("X-Access-Token", token, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
-            Response.Cookies.Append("X-Username", user.UserName, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
-            Response.Cookies.Append("X-Refresh-Token", user.RefreshToken, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
+            var user = await userService.GetCurrent();
+            return Ok(user.ToPublicDto());
+        }
+        
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("")]
+        public async Task<IActionResult> Update([FromBody] UserUpdateDto model)
+        {
+            var user = await userService.Update(model);
+            return Ok(user.ToPublicDto());
+        }
+        
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("{publicId}")]
+        public async Task<IActionResult> GetById(string publicId)
+        {
+            var user = await userService.GetByPublicId(publicId);
+            return Ok(user.ToPublicDto());
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [AuthorizeRoles(Roles.Admin, Roles.SuperAdmin)]
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAll()
+        {
+            var user = await userService.GetAll();
+            return Ok(user.Select(u => u.ToPublicDto()));
         }
     }
 }

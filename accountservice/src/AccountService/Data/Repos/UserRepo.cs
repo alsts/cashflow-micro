@@ -23,6 +23,11 @@ namespace AccountService.Data
         {
             return await context.Users.FirstOrDefaultAsync(p => p.Id == id);
         }
+        
+        public async Task<User> GetByPublicId(string publicId)
+        {
+            return await context.Users.FirstOrDefaultAsync(p => p.PublicId == publicId);
+        }
 
         public async Task Save(User user)
         {

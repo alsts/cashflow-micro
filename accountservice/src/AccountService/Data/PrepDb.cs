@@ -77,6 +77,7 @@ namespace AccountService.Data
                     Password = passwordHasher.Hash("password"),
                     CreatedAt = new DateTime(),
                     IsActive = true,
+                    PublicId = Guid.NewGuid().ToString(),
                     RefreshToken = null,
                     Gender = Genders.Male,
                     RoleId = (int) Roles.Admin
@@ -92,6 +93,7 @@ namespace AccountService.Data
                     Password = passwordHasher.Hash("password"),
                     CreatedAt = new DateTime(),
                     IsActive = true,
+                    PublicId = Guid.NewGuid().ToString(),
                     RefreshToken = null,
                     Gender = Genders.Male,
                     RoleId = (int) Roles.SuperAdmin
@@ -107,6 +109,7 @@ namespace AccountService.Data
                     Password = passwordHasher.Hash("password"),
                     CreatedAt = new DateTime(),
                     IsActive = true,
+                    PublicId = Guid.NewGuid().ToString(),
                     RefreshToken = null,
                     Gender = Genders.Male,
                     RoleId = (int) Roles.User
