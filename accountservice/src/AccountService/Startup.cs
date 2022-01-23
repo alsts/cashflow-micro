@@ -142,7 +142,7 @@ namespace AccountService
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
             // db seeder
-            PrepDb.PrepPopulation(app, logger, env.IsProduction());
+            PrepDb.Seed(app, logger, env);
         }
     }
 }

@@ -47,6 +47,11 @@ namespace AccountService.Services
             {
                 throw new HttpStatusException(HttpStatusCode.BadRequest, "Password does not match requirements");
             }
+            
+            if (!new EmailAddressAttribute().IsValid(userSignUpDto.Email))
+            {
+                throw new HttpStatusException(HttpStatusCode.BadRequest, "Need to specify valid email");
+            }
 
             if (await userRepo.GetUserByEmail(userSignUpDto.Email) != null)
             {
@@ -58,11 +63,6 @@ namespace AccountService.Services
                 throw new HttpStatusException(HttpStatusCode.BadRequest, "Username is already taken");
             }
 
-            if (!new EmailAddressAttribute().IsValid(userSignUpDto.Email))
-            {
-                throw new HttpStatusException(HttpStatusCode.BadRequest, "Need to specify valid email");
-            }
-
             var hashedPassword = passwordHasher.Hash(userSignUpDto.Password);
 
             var user = new User
@@ -71,24 +71,23 @@ namespace AccountService.Services
                 Password = hashedPassword,
                 Email = userSignUpDto.Email,
                 Firstname = userSignUpDto.Firstname,
-                Lastname = userSignUpDto.Surname,
+                Lastname = userSignUpDto.Lastname,
                 Gender = (Genders)userSignUpDto.Gender,
                 PublicId = Guid.NewGuid().ToString(),
-                CreatedAt = new DateTime(),
+                RefreshToken = Guid.NewGuid().ToString(),
+                CreatedAt = DateTime.Now,
                 RoleId = (int)Roles.User,
                 IsActive = true
             };
-
+            
             await userRepo.Save(user);
 
             user = await userRepo.GetUserByUsername(userSignUpDto.Username);
-
             if (user == null)
             {
                 throw new HttpStatusException(HttpStatusCode.BadRequest, "User not created");
             }
 
-            await UpdateRefreshToken(user);
             return user.WithoutPassword();
         }
 
@@ -102,32 +101,26 @@ namespace AccountService.Services
                 throw new HttpStatusException(HttpStatusCode.NotFound, "User with this email and password not found");
             }
 
-            await UpdateRefreshToken(user);
+            await UpdateRefreshTokenForUser(user);
             return user.WithoutPassword();
         }
 
-        public async Task<User> GetUserByUsernameAndRefreshToken(string userName, string refreshToken)
+        public async Task<User> GetUserByPublicIdAndRefreshToken(string publicId, string refreshToken)
         {
-            return await userRepo.GetUserByUsernameAndRefreshToken(userName, refreshToken);
-        }
-
-        public async Task UpdateRefreshToken(User user)
-        {
-            user.RefreshToken = Guid.NewGuid().ToString();
-            await userRepo.Save(user);
+            return await userRepo.GetUserByPublicIdAndRefreshToken(publicId, refreshToken);
         }
 
         public async Task<User> GetCurrent()
         {
-            if (loggedInUserDataHolder.UserID <= 0)
+            if (String.IsNullOrEmpty(loggedInUserDataHolder.UserID) && String.IsNullOrEmpty(loggedInUserDataHolder.RefreshToken))
             {
-                throw new HttpStatusException(HttpStatusCode.InternalServerError, "Invalid user");
+                throw new HttpStatusException(HttpStatusCode.Unauthorized, "Invalid user");
             }
 
-            var user = await userRepo.GetById(loggedInUserDataHolder.UserID);
+            var user = await userRepo.GetUserByPublicIdAndRefreshToken(loggedInUserDataHolder.UserID, loggedInUserDataHolder.RefreshToken);
             if (user == null)
             {
-                throw new HttpStatusException(HttpStatusCode.NotFound, "User not found");
+                throw new HttpStatusException(HttpStatusCode.Unauthorized, "User not found");
             }
             return user.WithoutPassword();
         }
@@ -151,7 +144,7 @@ namespace AccountService.Services
             var emailChanged = user.Email != userUpdateDto.Email;
             if (emailChanged && await userRepo.GetUserByEmail(userUpdateDto.Email) != null)
             {
-                throw new HttpStatusException(HttpStatusCode.BadRequest, "This email is already taken");
+                throw new HttpStatusException(HttpStatusCode.BadRequest, "Email is already taken");
             }
 
             user.Email = userUpdateDto.Email;
@@ -175,6 +168,12 @@ namespace AccountService.Services
         public async Task<IEnumerable<User>> GetAll()
         {
             return await userRepo.GetAll();
+        }
+
+        public async Task UpdateRefreshTokenForUser(User user)
+        {
+            user.RefreshToken = Guid.NewGuid().ToString();
+            await userRepo.Save(user);
         }
     }
 }

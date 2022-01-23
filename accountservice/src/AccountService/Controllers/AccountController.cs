@@ -31,7 +31,7 @@ namespace AccountService.Controllers
         {
             var user = await userService.SignIn(model);
             var token = jwtCreator.GenerateForUser(user);
-            Response.AppendAuthCookies(user, token);
+            Response.AppendAuthCookie(user, token);
             return Ok(user.ToPublicDto());
         }
         
@@ -40,7 +40,7 @@ namespace AccountService.Controllers
         {
             var user = await userService.SignUp(model);
             var token = jwtCreator.GenerateForUser(user);
-            Response.AppendAuthCookies(user, token);
+            Response.AppendAuthCookie(user, token);
             return Ok(user.ToPublicDto());
         }
         
@@ -48,18 +48,10 @@ namespace AccountService.Controllers
         [HttpGet("refresh")]
         public async Task<IActionResult> Refresh()
         {
-            if (!(Request.Cookies.TryGetValue("X-Username", out var userName) && Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken)))
-                return BadRequest();
-
-            var user = await userService.GetUserByUsernameAndRefreshToken(userName, refreshToken);
-            if (user == null)
-            {
-                return BadRequest();
-            }
-
+            var user = await userService.GetCurrent();
+            await userService.UpdateRefreshTokenForUser(user);
             var token = jwtCreator.GenerateForUser(user);
-            await userService.UpdateRefreshToken(user);
-            Response.AppendAuthCookies(user, token);
+            Response.AppendAuthCookie(user, token);
             return Ok();
         }
         

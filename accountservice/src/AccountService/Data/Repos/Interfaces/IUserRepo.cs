@@ -13,6 +13,6 @@ namespace AccountService.Data
         Task<User> GetUserByUsername(string username);
         Task Save(User user);
         Task<User> GetUserByUsernameAndPassword(string username, string hashedPassword);
-        Task<User> GetUserByUsernameAndRefreshToken(string userName, string refreshToken);
+        Task<User> GetUserByPublicIdAndRefreshToken(string publicId, string refreshToken);
     }
 }

@@ -22,8 +22,9 @@ namespace AccountService.Util.Jwt
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Role, user.RoleId.ToString())
+                new Claim(ClaimTypes.Role, user.RoleId.ToString()),
+                new Claim(ClaimTypes.UserData, user.PublicId),
+                new Claim(ClaimTypes.Authentication, user.RefreshToken)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Secret));

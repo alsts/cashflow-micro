@@ -48,9 +48,9 @@ namespace AccountService.Data
             return await context.Users.FirstOrDefaultAsync(p => p.UserName == username && p.Password == hashedPassword);
         }
 
-        public async Task<User> GetUserByUsernameAndRefreshToken(string userName, string refreshToken)
+        public async Task<User> GetUserByPublicIdAndRefreshToken(string publicId, string refreshToken)
         {
-            return await context.Users.FirstOrDefaultAsync(p => p.UserName == userName && p.RefreshToken == refreshToken);
+            return await context.Users.FirstOrDefaultAsync(p => p.PublicId == publicId && p.RefreshToken == refreshToken);
         }
 
         public async Task<User> GetUserByEmail(string email)
