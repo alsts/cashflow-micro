@@ -22,7 +22,7 @@ namespace AccountService.Tests.Api
             // Arrange
             var formModel = new Dictionary<string, string>
             {
-                { "username", "notexistinguser" },
+                { "username", "nonexistinguser" },
                 { "password", "password123!" }
             };
 
