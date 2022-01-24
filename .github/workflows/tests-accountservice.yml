@@ -17,6 +17,6 @@ jobs:
       - name: Install dependencies
         run: cd accountservice && dotnet restore
       - name: Build
-        run: dotnet build
+        run: cd accountservice && dotnet build
       - name: Test with the dotnet CLI
-        run: dotnet test
+        run: cd accountservice && dotnet test
