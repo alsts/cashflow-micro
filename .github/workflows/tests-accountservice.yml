@@ -3,7 +3,7 @@ name: tests-account
 on: 
   pull_request:
     paths: 
-      - 'auth/**'
+      - 'accountservice/**'
       
 jobs:
   build:
