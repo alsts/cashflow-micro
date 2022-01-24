@@ -3,7 +3,7 @@ name: tests-account
 on: 
   pull_request:
     paths: 
-      - 'auth/**'
+      - 'accountservice/**'
       
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
         with:
           dotnet-version: '3.1.x'
       - name: Install dependencies
-        run: dotnet restore
+        run: cd accountservice && dotnet restore
       - name: Build
         run: dotnet build
       - name: Test with the dotnet CLI
