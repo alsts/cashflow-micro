@@ -47,7 +47,7 @@ namespace AccountService.Tests.Api
             var formModel = new Dictionary<string, string>
             {
                 { "username", "user" },
-                { "password", "notcorrectpassword" }
+                { "password", "incorrectpassword" }
             };
 
             // Act
