@@ -14,4 +14,5 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.x'
+      - name: Update Dependencies, Build, Test with the dotnet CLI
         run: cd accountservice && dotnet restore && dotnet build && dotnet test
