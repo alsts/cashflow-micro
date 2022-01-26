@@ -34,6 +34,7 @@ namespace AccountService.Data
                 logger.LogInformation("---> Applying migrations");
                 try
                 {
+                    context.Database.EnsureCreated();
                     context.Database.Migrate();
                 }
                 catch (Exception e)

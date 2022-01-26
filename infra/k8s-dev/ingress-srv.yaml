@@ -7,20 +7,13 @@ metadata:
     nginx.ingress.kubernetes.io/use-regex: 'true'
 spec:
   rules:
-    - host: platform.dev
+    - host: cashflow.dev
       http:
         paths:
-          - path: /api/platforms/?(.*)
+          - path: /api/accounts/?(.*)
             pathType: Prefix
             backend:
               service:
-                name: platforms-clusterip-srv
-                port:
-                  number: 80
-          - path: /api/commands/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: commands-clusterip-srv
+                name: accounts-clusterip-srv
                 port:
                   number: 80

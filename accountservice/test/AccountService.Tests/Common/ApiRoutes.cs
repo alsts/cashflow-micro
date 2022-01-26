@@ -4,7 +4,7 @@ namespace AccountService.Tests.Common
     {
         public static class Account
         {
-            private const string AccountBase = "/account";
+            private const string AccountBase = "/api/accounts";
             public const string GetCurrent = AccountBase;
             public const string Update = AccountBase;
             public const string SignIn = AccountBase +  "/signin";
