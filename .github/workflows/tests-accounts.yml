@@ -1,0 +1,17 @@
+name: tests-accounts
+
+on: 
+  pull_request:
+    paths: 
+      - 'accountservice/**'
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+        run: cd accountservice && dotnet restore && dotnet build && dotnet test

@@ -9,11 +9,7 @@ build:
   local:
     push: true
   artifacts:
-    - image: alexsts/platformservice
-      context: platformservice
+    - image: alexsts/cashflow-accounts
+      context: accountservice
       docker:
         dockerfile: Dockerfile
-    - image: alexsts/commandservice
-      context: commandservice
-      docker:
-        dockerfile: Dockerfile   

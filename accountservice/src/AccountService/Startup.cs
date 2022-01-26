@@ -46,9 +46,9 @@ namespace AccountService
         {
             if (env.IsProduction())
             {
-                logger.LogInformation("---> Using MsSql Db");
-                services.AddDbContext<AppDbContext>(opt =>
-                    opt.UseSqlServer(Configuration.GetConnectionString("AccountsConn")));
+                logger.LogInformation("---> Using MySql Db");
+                var connectionString = Configuration.GetConnectionString("DefaultConnection");
+                services.AddDbContext<AppDbContext>(opt => opt.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
             }
             else
             {

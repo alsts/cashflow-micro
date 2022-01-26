@@ -1,31 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: commands-depl
+  name: accounts-depl
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: commandservice
+      app: accounts
   template:
     metadata:
       labels:
-        app: commandservice
+        app: accounts
     spec:
       containers:
-        - name: commandservice
-          image: alexsts/commandservice:latest
+        - name: accounts
+          image: alexsts/cashflow-accounts:latest
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: commands-clusterip-srv
+  name: accounts-clusterip-srv
 spec:
   type: ClusterIP
   selector:
-    app: commandservice
+    app: accounts
   ports:
-    - name: commandservice
+    - name: accounts
       protocol: TCP
       port: 80
       targetPort: 80

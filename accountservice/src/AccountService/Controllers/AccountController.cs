@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace AccountService.Controllers
 {
     [ApiController]
-    [Route("account")]
+    [Route("api/accounts")]
     public class AccountController : ControllerBase
     {
         private readonly ILogger<AccountController> logger;
