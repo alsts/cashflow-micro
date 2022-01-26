@@ -141,7 +141,7 @@ namespace AccountService
             app.UseMiddleware<ErrorHandlerMiddleware>();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-            // db seeder
+            // db seeder:
             PrepDb.Seed(app, logger, env);
         }
     }
