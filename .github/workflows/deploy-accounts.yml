@@ -12,12 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2 
-      - name: Build  
       - run: cd accountservice && docker build -t alexsts/cashflow-accounts . 
-      - name: Login to Dockerhub  
-      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - name: Deploy to Dockerhub
+        run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         env: 
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Deploy to Dockerhub
       - run: docker push alexsts/cashflow-accounts
