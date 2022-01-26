@@ -14,4 +14,5 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '5.0.x'
-      - run: cd accountservice && dotnet restore && dotnet build && dotnet test
+      - name: Install Dependencies, Build, Run Tests
+        run: cd accountservice && dotnet restore && dotnet build && dotnet test
