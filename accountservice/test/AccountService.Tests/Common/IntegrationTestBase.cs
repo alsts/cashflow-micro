@@ -121,7 +121,7 @@ namespace AccountService.Tests.Common
                 IsActive = true,
                 RefreshToken = null,
                 Gender = Genders.Male,
-                RoleId = (int) role,
+                RoleId = (int) role
             };
         }
     }

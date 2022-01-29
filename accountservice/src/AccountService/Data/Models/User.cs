@@ -18,5 +18,6 @@ namespace AccountService.Models
         public string RefreshToken { get; set; }
         public Genders Gender { get; set; }
         public int RoleId { get; set; }
+        public bool IsBanned { get; set; } = false;
     }
 }
