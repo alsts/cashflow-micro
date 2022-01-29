@@ -300,7 +300,6 @@ namespace AccountService.Tests.Api
             response.EnsureSuccessStatusCode();
             var userResponse = await response.Content.ReadAsAsync<UserReadDto>();
             userResponse.Should().NotBeNull();
-            user.Version += 1; // User refresh token was updated
             userResponse.Should().BeEquivalentTo(user.ToPublicDto());
         }
         
