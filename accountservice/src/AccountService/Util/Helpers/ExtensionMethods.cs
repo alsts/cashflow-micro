@@ -32,7 +32,8 @@ namespace AccountService.Util.Helpers
                 Lastname = user.Lastname,
                 Gender = (int) user.Gender,
                 CreatedAt = user.CreatedAt,
-                Id = user.PublicId
+                Id = user.PublicId,
+                Version = user.Version
             };
         }
     }

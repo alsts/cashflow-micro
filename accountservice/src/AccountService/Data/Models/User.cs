@@ -4,7 +4,7 @@ using AccountService.Util.Enums;
 
 namespace AccountService.Models
 {
-    public class User
+    public class User : BaseEntity
     {
         [Key] [Required] public int Id { get; set; }
         [Required] public string Email { get; set; }
