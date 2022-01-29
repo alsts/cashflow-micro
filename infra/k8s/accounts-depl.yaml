@@ -15,6 +15,17 @@ spec:
       containers:
         - name: accounts
           image: alexsts/cashflow-accounts:latest
+          env:
+          - name: "ASPNETCORE_ENVIRONMENT"
+            value: "Production"
+          volumeMounts:
+          - name: secrets
+            mountPath: /app/secrets
+            readOnly: true
+      volumes:
+        - name: secrets
+          secret:
+            secretName: secret-shared
 ---
 apiVersion: v1
 kind: Service

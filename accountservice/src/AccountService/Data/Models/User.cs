@@ -4,7 +4,7 @@ using AccountService.Util.Enums;
 
 namespace AccountService.Models
 {
-    public class User
+    public class User : BaseEntity
     {
         [Key] [Required] public int Id { get; set; }
         [Required] public string Email { get; set; }
@@ -18,5 +18,6 @@ namespace AccountService.Models
         public string RefreshToken { get; set; }
         public Genders Gender { get; set; }
         public int RoleId { get; set; }
+        public bool IsBanned { get; set; } = false;
     }
 }

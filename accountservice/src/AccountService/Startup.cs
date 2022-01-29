@@ -12,7 +12,6 @@ using AccountService.Util.Jwt;
 using AccountService.Util.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -47,7 +46,7 @@ namespace AccountService
             if (env.IsProduction())
             {
                 logger.LogInformation("---> Using MySql Db");
-                var connectionString = Configuration.GetConnectionString("DefaultConnection");
+                var connectionString = GetMySqlDatabaseConnectionString();
                 services.AddDbContext<AppDbContext>(opt => opt.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
             }
             else
@@ -143,6 +142,15 @@ namespace AccountService
 
             // db seeder:
             PrepDb.Seed(app, logger, env);
+        }
+
+        private string GetMySqlDatabaseConnectionString()
+        {
+            return $"server={Configuration["DatabaseSettings:Url"]}; " +
+                $"port={Configuration["DatabaseSettings:Port"]}; " +
+                $"database={Configuration["DatabaseSettings:Name"]}; " +
+                $"user={Configuration["DatabaseSettings:User"]}; " +
+                $"password={Configuration["DatabaseSettings:Password"]};";
         }
     }
 }
