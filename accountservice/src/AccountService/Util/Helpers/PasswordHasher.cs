@@ -16,7 +16,7 @@ namespace AccountService.Util.Helpers
         
         public string Hash(string password)
         {
-            var saltBytes = Convert.FromBase64String(configuration["PasswordSalt"]);
+            var saltBytes = Convert.FromBase64String(configuration["Authentication:PasswordSalt"]);
  
             return Convert.ToBase64String(KeyDerivation.Pbkdf2(
                 password: password,
