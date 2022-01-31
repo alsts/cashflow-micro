@@ -326,7 +326,7 @@ namespace AccountService.Tests.Api
         public async Task RefreshToken_with_basicUserToken_return_Ok_UserReadDto()
         {
             // Arrange
-            var user = CreateUser("user1");
+            var user = CreateUser("user123");
             Arrange(dbContext =>
             {
                 dbContext.Users.Add(user);
