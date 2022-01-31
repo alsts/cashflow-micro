@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasks-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tasks
+  template:
+    metadata:
+      labels:
+        app: tasks
+    spec:
+      containers:
+        - name: tasks
+          image: alexsts/cashflow-tasks:latest
+          env:
+          - name: "ASPNETCORE_ENVIRONMENT"
+            value: "Production"
+          volumeMounts:
+          - name: secrets
+            mountPath: /app/secrets
+            readOnly: true
+      volumes:
+        - name: secrets
+          secret:
+            secretName: secret-shared
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tasks-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: tasks
+  ports:
+    - name: tasks
+      protocol: TCP
+      port: 80
+      targetPort: 80

@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
+using AccountService.Util;
+using TaskService.Data.Models;
+using TaskService.Data.Repos.Interfaces;
+using TaskService.Services.interfaces;
+using TaskService.Util.DataObjects;
+
+namespace TaskService.Services
+{
+    public class UserService : IUserService
+    {
+        private readonly IUserRepo userRepo;
+        private readonly LoggedInUserDataHolder loggedInUserDataHolder;
+
+        public UserService(IUserRepo userRepo, LoggedInUserDataHolder loggedInUserDataHolder)
+        {
+            this.userRepo = userRepo;
+            this.loggedInUserDataHolder = loggedInUserDataHolder;
+        }
+
+        public async Task<User> GetCurrent()
+        {
+            if (String.IsNullOrEmpty(loggedInUserDataHolder.UserID) && String.IsNullOrEmpty(loggedInUserDataHolder.RefreshToken))
+            {
+                throw new HttpStatusException(HttpStatusCode.Unauthorized, "Invalid user");
+            }
+
+            var user = await userRepo.GetUserByPublicIdAndRefreshToken(loggedInUserDataHolder.UserID, loggedInUserDataHolder.RefreshToken);
+            if (user == null)
+            {
+                throw new HttpStatusException(HttpStatusCode.BadRequest, "User not found");
+            }
+            return user;
+        }
+        
+        public async Task<User> GetByPublicId(string id)
+        {
+            var user = await userRepo.GetByPublicId(id);
+            if (user == null)
+            {
+                throw new HttpStatusException(HttpStatusCode.NotFound, "User not found");
+            }
+            return user;
+        }
+
+        public async Task<IEnumerable<User>> GetAll()
+        {
+            return await userRepo.GetAll();
+        }
+    }
+}
