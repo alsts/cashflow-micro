@@ -327,6 +327,7 @@ namespace AccountService.Tests.Api
         {
             // Arrange
             var user = CreateUser("user1");
+
             Arrange(dbContext =>
             {
                 dbContext.Users.Add(user);
