@@ -45,7 +45,8 @@ namespace TaskService.Tests.Api
             var user = CreateUser("user");
             Arrange(dbContext => { dbContext.Users.Add(user); });
 
-            var task = CreateTask("task123", user.Id);
+            var task = CreateTask("task1", user.Id);
+
             Arrange(dbContext => { dbContext.Tasks.Add(task); });
 
             var formModel = new Dictionary<string, string>
