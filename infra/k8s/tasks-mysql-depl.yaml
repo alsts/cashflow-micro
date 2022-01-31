@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: accounts-mysql-pvc
+  name: tasks-mysql-pvc
 spec:
   accessModes:
     - ReadWriteMany
@@ -12,17 +12,17 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: accounts-mysql
+  name: tasks-mysql
 spec:
   selector:
     matchLabels:
-      app: accounts-mysql
+      app: tasks-mysql
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: accounts-mysql
+        app: tasks-mysql
     spec:
       containers:
         - image: mysql:8.0
@@ -42,16 +42,16 @@ spec:
       volumes:
         - name: mysql-persistent-storage
           persistentVolumeClaim:
-            claimName: accounts-mysql-pvc                   
+            claimName: tasks-mysql-pvc                   
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: accounts-mysql-clusterip-srv
+  name: tasks-mysql-clusterip-srv
 spec:
   type: ClusterIP
   selector:
-    app: accounts-mysql
+    app: tasks-mysql
   ports:
     - name: mssql
       protocol: TCP
@@ -61,11 +61,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mssql-accounts-loadbalancer
+  name: mssql-tasks-loadbalancer
 spec:
   type: LoadBalancer
   selector:
-    app: accounts-mysql
+    app: tasks-mysql
   ports:
     - protocol: TCP
       port: 3322

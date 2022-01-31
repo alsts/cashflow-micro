@@ -10,6 +10,10 @@ build:
     push: true
   artifacts:
     - image: alexsts/cashflow-accounts
-      context: accountservice
+      context: accounts
+      docker:
+        dockerfile: Dockerfile
+    - image: alexsts/cashflow-tasks
+      context: tasks
       docker:
         dockerfile: Dockerfile

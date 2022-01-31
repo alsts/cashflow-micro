@@ -1,9 +1,9 @@
-name: tests-accounts
+name: tests-tasks
 
 on: 
   pull_request:
     paths: 
-      - 'accounts/**'
+      - 'tasks/**'
       
 jobs:
   build:
@@ -15,4 +15,4 @@ jobs:
         with:
           dotnet-version: '5.0.x'
       - name: Install Dependencies, Build, Run Tests
-        run: cd accounts && dotnet restore && dotnet build && dotnet test
+        run: cd tasks && dotnet restore && dotnet build && dotnet test
