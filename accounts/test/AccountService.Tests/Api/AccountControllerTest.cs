@@ -330,7 +330,7 @@ namespace AccountService.Tests.Api
             Arrange(dbContext =>
             {
                 dbContext.Users.Add(user);
-                dbContext.Users.Add(CreateUser("user234"));
+                dbContext.Users.Add(CreateUser("user456"));
             });
 
             // Act
