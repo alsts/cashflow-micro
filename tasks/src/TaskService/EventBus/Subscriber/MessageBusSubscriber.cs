@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
@@ -18,13 +19,22 @@ namespace TaskService.EventBus.Subscriber
         private IConnection connection;
         private IModel chanel;
         private string queueName;
+        private readonly IWebHostEnvironment env;
 
-        public MessageBusSubscriber(IConfiguration configuration, IEventProcessor eventProcessor)
+
+        public MessageBusSubscriber(
+            IConfiguration configuration, 
+            IEventProcessor eventProcessor,
+            IWebHostEnvironment env)
         {
             this.configuration = configuration;
             this.eventProcessor = eventProcessor;
+            this.env = env;
             
-            InitializeRabbitMQ();
+            if (env.IsProduction())
+            {
+                InitializeRabbitMQ();
+            }
         }
 
         private void InitializeRabbitMQ()
@@ -60,16 +70,20 @@ namespace TaskService.EventBus.Subscriber
         {
             stoppingToken.ThrowIfCancellationRequested();
 
-            var consumer = new EventingBasicConsumer(chanel);
-            consumer.Received += (ModuleHandle, ea) =>
+            if (env.IsProduction())
             {
-                Console.WriteLine("---> Event received");
-                var body = ea.Body;
-                var notificationMessage = Encoding.UTF8.GetString(body.ToArray());
+                var consumer = new EventingBasicConsumer(chanel);
+                consumer.Received += (ModuleHandle, ea) =>
+                {
+                    Console.WriteLine("---> Event received");
+                    var body = ea.Body;
+                    var notificationMessage = Encoding.UTF8.GetString(body.ToArray());
 
-                eventProcessor.ProcessEvent(notificationMessage);
-            };
-            chanel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+                    eventProcessor.ProcessEvent(notificationMessage);
+                };
+                chanel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);  
+            }
+
             return Task.CompletedTask;
         }
         

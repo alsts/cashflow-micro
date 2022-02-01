@@ -21,7 +21,7 @@ namespace AccountService.Controllers
         private readonly ILogger<AccountController> logger;
         private readonly JwtTokenCreator jwtCreator;
         private readonly IUserService userService;
-        private readonly IMessageBusPublisher _messageBusPublisher;
+        private readonly IMessageBusPublisher messageBusPublisher;
 
         public AccountController(
             JwtTokenCreator jwtCreator,
@@ -30,7 +30,7 @@ namespace AccountService.Controllers
         {
             this.jwtCreator = jwtCreator;
             this.userService = userService;
-            this._messageBusPublisher = messageBusPublisher;
+            this.messageBusPublisher = messageBusPublisher;
         }
 
         [HttpPost("signin")]
@@ -52,7 +52,7 @@ namespace AccountService.Controllers
             {
                 var userPublishedDto = user.ToPublishedDto();
                 userPublishedDto.Event = "User_Published";
-                _messageBusPublisher.PublishNewUser(userPublishedDto);
+                messageBusPublisher.PublishNewUser(userPublishedDto);
             }
             catch (Exception ex)
             {

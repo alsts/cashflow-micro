@@ -56,12 +56,13 @@ namespace AccountService
                 services.AddDbContext<AppDbContext>(opt =>
                     opt.UseInMemoryDatabase("InMem"));
             }
+            
+            services.AddSingleton<IMessageBusPublisher, MessageBusPublisher>();
 
             var jwtSettings = new JwtSettings();
             Configuration.Bind("JwtSettings", jwtSettings);
 
             services.AddSingleton(jwtSettings);
-            services.AddSingleton<IMessageBusPublisher, MessageBusPublisher>();
             services.AddTransient<JwtTokenCreator>();
 
             services.AddAuthentication(i =>
@@ -93,7 +94,7 @@ namespace AccountService
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.Cookie.IsEssential = true;
                 });
-
+            
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
