@@ -35,5 +35,21 @@ namespace AccountService.Util.Helpers
                 Id = user.PublicId
             };
         }
+        
+        public static UserPublishedDto ToPublishedDto(this User user) 
+        {
+            if (user == null) return null;
+            
+            return new UserPublishedDto
+            {
+                Email = user.Email,
+                Username = user.UserName,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Gender = (int) user.Gender,
+                CreatedAt = user.CreatedAt,
+                Id = user.PublicId
+            };
+        }
     }
 }

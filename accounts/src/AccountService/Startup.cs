@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using AccountService.Data;
+using AccountService.EventBus.Publisher;
 using AccountService.Middlewares;
 using AccountService.Services;
 using AccountService.Services.interfaces;
@@ -60,6 +61,7 @@ namespace AccountService
             Configuration.Bind("JwtSettings", jwtSettings);
 
             services.AddSingleton(jwtSettings);
+            services.AddSingleton<IMessageBusPublisher, MessageBusPublisher>();
             services.AddTransient<JwtTokenCreator>();
 
             services.AddAuthentication(i =>

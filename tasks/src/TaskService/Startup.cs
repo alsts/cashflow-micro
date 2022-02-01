@@ -16,6 +16,8 @@ using Microsoft.OpenApi.Models;
 using TaskService.Data;
 using TaskService.Data.Repos;
 using TaskService.Data.Repos.Interfaces;
+using TaskService.EventBus.Subscriber;
+using TaskService.EventBus.Subscriber.EventProcessing;
 using TaskService.Services;
 using TaskService.Services.interfaces;
 using TaskService.Util.DataObjects;
@@ -97,6 +99,9 @@ namespace TaskService
             
             services.AddScoped<ITaskService, Services.TaskService>();
             services.AddScoped<IUserService, UserService>();
+            
+            services.AddHostedService<MessageBusSubscriber>();
+            services.AddSingleton<IEventProcessor, EventProcessor>();
 
             services.AddControllers();
             services.AddScoped<LoggedInUserDataHolder>();
