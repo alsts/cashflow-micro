@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TaskService.Data.Models;
 using TaskService.Data.Repos.Interfaces;
+using Task = System.Threading.Tasks.Task;
 
 namespace TaskService.Data.Repos
 {
@@ -33,6 +34,25 @@ namespace TaskService.Data.Repos
         public async Task<IEnumerable<User>> GetAll()
         {
             return await context.Users.ToListAsync();
+        }
+
+        public async Task Save(User user)
+        {
+            if (user.Id != 0)
+            {
+                context.Users.Update(user);
+            }
+            else
+            {
+                await context.Users.AddAsync(user);
+            }
+            
+            await SaveChanges();
+        }
+        
+        private async Task<bool> SaveChanges()
+        {
+            return await context.SaveChangesAsync() >= 0;
         }
     }
 }

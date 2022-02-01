@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using AccountService.Data;
+using AccountService.EventBus.Publisher;
 using AccountService.Middlewares;
 using AccountService.Services;
 using AccountService.Services.interfaces;
@@ -55,6 +56,8 @@ namespace AccountService
                 services.AddDbContext<AppDbContext>(opt =>
                     opt.UseInMemoryDatabase("InMem"));
             }
+            
+            services.AddSingleton<IMessageBusPublisher, MessageBusPublisher>();
 
             var jwtSettings = new JwtSettings();
             Configuration.Bind("JwtSettings", jwtSettings);
@@ -91,7 +94,7 @@ namespace AccountService
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.Cookie.IsEssential = true;
                 });
-
+            
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();

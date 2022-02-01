@@ -28,6 +28,8 @@ namespace TaskService.Controllers
         public async Task<IActionResult> Create([FromBody] TaskCreateDto model)
         {
             var task = await taskService.Create(model);
+            
+            // return CreatedAtRoute(nameof(SignUp), new { Id = user.PublicId }, user.ToPublicDto());
             return Ok(task.ToPublicDto());
         }
         
