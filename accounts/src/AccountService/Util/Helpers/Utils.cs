@@ -1,5 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace AccountService.Util.Helpers
 {
@@ -22,6 +24,27 @@ namespace AccountService.Util.Helpers
                 options.SingleLine = true;
                 options.TimestampFormat = "[MM/dd/yyyy HH:mm:ss] ";
             });
+        }
+        
+        public static void TryConnecting<T>(
+            int numberOfRetries,
+            int delayInSeconds,
+            Action retriableAction,
+            Action<int> beforeEachRetryAction,
+            Action fallBackAction) where T : Exception
+        {
+            var waitAndRetryPolicy = Policy
+                .Handle<T>()
+                .WaitAndRetry(
+                    numberOfRetries,
+                    _ => TimeSpan.FromSeconds(delayInSeconds),
+                    (_, _, retryCount, _) => beforeEachRetryAction(retryCount));
+
+            Policy
+                .Handle<Exception>()
+                .Fallback(fallBackAction)
+                .Wrap(waitAndRetryPolicy)
+                .Execute(retriableAction);
         }
     }
 }

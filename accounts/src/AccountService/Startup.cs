@@ -22,6 +22,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MySqlConnector;
 
 namespace AccountService
 {
@@ -29,13 +30,16 @@ namespace AccountService
     {
         private readonly IWebHostEnvironment env;
         private readonly ILogger<Startup> logger;
+        
+        const int NUMBER_OF_RETRIES = 3;
+        const int DELAY_IN_SECONDS = 3;
         public IConfiguration Configuration { get; }
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
             this.env = env;
-            
+
             // startup logger:
             var loggerFactory = LoggerFactory.Create(Utils.ConfigureLogs);
             logger = loggerFactory.CreateLogger<Startup>();
@@ -53,11 +57,9 @@ namespace AccountService
             else
             {
                 logger.LogInformation("---> Using inMem Db");
-                services.AddDbContext<AppDbContext>(opt =>
-                    opt.UseInMemoryDatabase("InMem"));
+                services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
             }
-            
-            services.AddSingleton<IMessageBusPublisher, MessageBusPublisher>();
+
 
             var jwtSettings = new JwtSettings();
             Configuration.Bind("JwtSettings", jwtSettings);
@@ -94,7 +96,7 @@ namespace AccountService
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.Cookie.IsEssential = true;
                 });
-            
+
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -105,6 +107,9 @@ namespace AccountService
 
             // configure DI for application services
             services.AddHttpContextAccessor();
+            
+            // register message bus:
+            services.AddSingleton<IMessageBusPublisher, MessageBusPublisher>();
 
             // register automapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -121,20 +126,20 @@ namespace AccountService
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AccountService v1"));
             }
-            
+
             // requests logging middleware
             app.UseMiddleware<RequestLoggingMiddleware>();
 
             // routing
             app.UseHttpsRedirection();
             app.UseRouting();
-            
+
             // global cors policy
             app.UseCors(x => x
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader());
-            
+
             // authentication
             app.UseAuthentication();
             app.UseAuthorization();
@@ -142,7 +147,17 @@ namespace AccountService
             // global exception handler
             app.UseMiddleware<ErrorHandlerMiddleware>();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-
+            
+            // verify database connection:
+            Utils.TryConnecting<MySqlException>(NUMBER_OF_RETRIES, DELAY_IN_SECONDS,
+                () => {
+                    using var serviceScope = app.ApplicationServices.CreateScope();
+                    serviceScope.ServiceProvider.GetService<AppDbContext>();
+                    logger.LogInformation("---> MySQL Database connected");
+                },
+                retryCount => logger.LogInformation("---> Retrying to connect with MySQL: " + retryCount),
+                () => logger.LogError("---> Could not connect to MySQL"));
+            
             // db seeder:
             PrepDb.Seed(app, logger, env);
         }
@@ -150,10 +165,10 @@ namespace AccountService
         private string GetMySqlDatabaseConnectionString()
         {
             return $"server={Configuration["DatabaseSettings:Url"]}; " +
-                $"port={Configuration["DatabaseSettings:Port"]}; " +
-                $"database={Configuration["DatabaseSettings:Name"]}; " +
-                $"user={Configuration["DatabaseSettings:User"]}; " +
-                $"password={Configuration["DatabaseSettings:Password"]};";
+                   $"port={Configuration["DatabaseSettings:Port"]}; " +
+                   $"database={Configuration["DatabaseSettings:Name"]}; " +
+                   $"user={Configuration["DatabaseSettings:User"]}; " +
+                   $"password={Configuration["DatabaseSettings:Password"]};";
         }
     }
 }
