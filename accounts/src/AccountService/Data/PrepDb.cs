@@ -1,16 +1,15 @@
 using System;
 using System.Linq;
+using AccountService.Data.Models;
 using AccountService.Models;
-using AccountService.Util.Enums;
-using AccountService.Util.Helpers.Interfaces;
+using Cashflow.Common.Data.Enums;
+using Cashflow.Common.Utils.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using MySqlConnector;
-using Polly;
 
 namespace AccountService.Data
 {

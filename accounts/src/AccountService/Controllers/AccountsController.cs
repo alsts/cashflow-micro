@@ -2,11 +2,15 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AccountService.Dtos;
-using AccountService.EventBus.Publisher;
+using AccountService.Events.Publishers;
 using AccountService.Services.interfaces;
-using AccountService.Util.Enums;
-using AccountService.Util.Helpers;
+using AccountService.Util.AccountService.Util.Helpers;
 using AccountService.Util.Jwt;
+using AutoMapper;
+using Cashflow.Common.Data.Enums;
+using Cashflow.Common.Events;
+using Cashflow.Common.Utils;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +29,7 @@ namespace AccountService.Controllers
 
         public AccountController(
             JwtTokenCreator jwtCreator,
-            IUserService userService,
+            IUserService userService, 
             IMessageBusPublisher messageBusPublisher)
         {
             this.jwtCreator = jwtCreator;
@@ -46,19 +50,8 @@ namespace AccountService.Controllers
         public async Task<IActionResult> SignUp([FromBody] UserSignUpDto model)
         {
             var user = await userService.SignUp(model);
-            
-            // Send Async Message
-            try
-            {
-                var userPublishedDto = user.ToPublishedDto();
-                userPublishedDto.Event = "User_Published";
-                messageBusPublisher.PublishNewUser(userPublishedDto);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"---> Could not send user to platform service async: {ex}");
-            }
-            
+            await messageBusPublisher.PublishCreatedUser(user);
+
             var token = jwtCreator.GenerateForUser(user);
             Response.AppendAuthCookie(user, token);
             return Ok(user.ToPublicDto());
@@ -88,6 +81,8 @@ namespace AccountService.Controllers
         public async Task<IActionResult> Update([FromBody] UserUpdateDto model)
         {
             var user = await userService.Update(model);
+            await messageBusPublisher.PublishUpdatedUser(user);
+            
             return Ok(user.ToPublicDto());
         }
 

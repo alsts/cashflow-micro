@@ -1,28 +1,26 @@
 using System;
-using System.Text;
-using AccountService.Middlewares;
-using AccountService.Util.Middleware;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Cashflow.Common.Data.DataObjects;
+using Cashflow.Common.Events;
+using Cashflow.Common.Middlewares;
+using Cashflow.Common.Utils;
+using GreenPipes;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using RabbitMQ.Client;
 using TaskService.Data;
 using TaskService.Data.Repos;
 using TaskService.Data.Repos.Interfaces;
-using TaskService.EventBus.Subscriber;
-using TaskService.EventBus.Subscriber.EventProcessing;
+using TaskService.Events;
+using TaskService.Events.Consumers;
 using TaskService.Services;
 using TaskService.Services.interfaces;
-using TaskService.Util.DataObjects;
-using TaskService.Util.Helpers;
-using TaskService.Util.Jwt;
 
 namespace TaskService
 {
@@ -30,15 +28,15 @@ namespace TaskService
     {
         private readonly IWebHostEnvironment env;
         private readonly ILogger<Startup> logger;
-        public IConfiguration Configuration { get; }
+        public IConfiguration Config { get; }
 
-        public Startup(IConfiguration configuration, IWebHostEnvironment env)
+        public Startup(IConfiguration config, IWebHostEnvironment env)
         {
-            Configuration = configuration;
+            Config = config;
             this.env = env;
             
             // startup logger:
-            var loggerFactory = LoggerFactory.Create(Utils.ConfigureLogs);
+            var loggerFactory = LoggerFactory.Create(Configuration.ConfigureLogs);
             logger = loggerFactory.CreateLogger<Startup>();
         }
 
@@ -50,6 +48,49 @@ namespace TaskService
                 logger.LogInformation("---> Using MySql Db");
                 var connectionString = GetMySqlDatabaseConnectionString();
                 services.AddDbContext<AppDbContext>(opt => opt.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+                logger.LogInformation("---> Using RabbitMQ");
+                services.AddMassTransit(x =>
+                {
+                    x.AddConsumer<UserCreatedConsumer>();
+                    x.AddConsumer<UserUpdatedConsumer>();
+                    x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                    {
+                        cfg.UseHealthCheck(provider);
+                        cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"));
+
+                        cfg.ReceiveEndpoint(Queue.UserCreated, ep =>
+                        {
+                            ep.Exclusive = false;
+                            ep.AutoDelete = false;
+                            ep.Durable = true;
+                            ep.PrefetchCount = 16;
+                            ep.UseMessageRetry(r => r.Interval(2, 100));
+                            ep.ConfigureConsumer<UserCreatedConsumer>(provider);
+                            
+                            // dont move messages to error queue, just put them back for redelivery
+                            ep.DiscardFaultedMessages();
+                        });
+                        
+                        cfg.ReceiveEndpoint(Queue.UserUpdated, ep =>
+                        {
+                            ep.Exclusive = false;
+                            ep.AutoDelete = false;
+                            ep.Durable = true;
+                            ep.PrefetchCount = 16;
+                            ep.UseMessageRetry(r => r.Interval(2, 100));
+                            ep.ConfigureConsumer<UserUpdatedConsumer>(provider);
+                            
+                            // dont move messages to error queue, just put them back for redelivery
+                            ep.DiscardFaultedMessages();
+                        });
+                    }));
+                });
+                    
+                services.AddMassTransitHostedService();
+                
+                services.AddScoped<UserCreatedConsumer>();
+                services.AddScoped<UserUpdatedConsumer>();
             }
             else
             {
@@ -59,49 +100,19 @@ namespace TaskService
             }
 
             var jwtSettings = new JwtSettings();
-            Configuration.Bind("JwtSettings", jwtSettings);
-
+            Config.Bind("JwtSettings", jwtSettings);
             services.AddSingleton(jwtSettings);
-
-            services.AddAuthentication(i =>
-                {
-                    i.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    i.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    i.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                    i.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtSettings.Issuer,
-                        ValidAudience = jwtSettings.Audience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
-                        ClockSkew = jwtSettings.Expire
-                    };
-                    options.SaveToken = true;
-                    options.EventsType = typeof(CustomJwtBearerEvents);
-                })
-                .AddCookie(options =>
-                {
-                    options.Cookie.SameSite = SameSiteMode.Strict;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    options.Cookie.IsEssential = true;
-                });
+            
+            services.AddJwtCookiesAuthentication(jwtSettings);
 
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddTransient<ITaskRepo, TaskRepo>();
-            services.AddTransient<JwtTokenCreator>();
             
             services.AddScoped<ITaskService, Services.TaskService>();
             services.AddScoped<IUserService, UserService>();
             
-            services.AddHostedService<MessageBusSubscriber>();
-            services.AddSingleton<IEventProcessor, EventProcessor>();
+            // services.AddHostedService<MessageBusSubscriber>();
+            // services.AddSingleton<IEventProcessor, EventProcessor>();
 
             services.AddControllers();
             services.AddScoped<LoggedInUserDataHolder>();
@@ -153,11 +164,11 @@ namespace TaskService
 
         private string GetMySqlDatabaseConnectionString()
         {
-            return $"server={Configuration["DatabaseSettings:Url"]}; " +
-                $"port={Configuration["DatabaseSettings:Port"]}; " +
-                $"database={Configuration["DatabaseSettings:Name"]}; " +
-                $"user={Configuration["DatabaseSettings:User"]}; " +
-                $"password={Configuration["DatabaseSettings:Password"]};";
+            return $"server={Config["DatabaseSettings:Url"]}; " +
+                $"port={Config["DatabaseSettings:Port"]}; " +
+                $"database={Config["DatabaseSettings:Name"]}; " +
+                $"user={Config["DatabaseSettings:User"]}; " +
+                $"password={Config["DatabaseSettings:Password"]};";
         }
     }
 }

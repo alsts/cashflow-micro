@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using GenericEventDto = Cashflow.Common.Dtos;
 
 namespace TaskService.Dtos
 {
-    public class TaskCreateDto : GenericEventDto
+    public class TaskCreateDto 
     {
         [Required] public string Title { get; set; }
         [Required] public string Description { get; set; }

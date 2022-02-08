@@ -1,4 +1,4 @@
-using AccountService.Util.Helpers;
+using Cashflow.Common.Utils;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -24,7 +24,7 @@ namespace AccountService
                         .AddJsonFile("secrets/shared.secrets.json", optional: true)
                         .AddEnvironmentVariables();
                 })
-                .ConfigureLogging(Utils.ConfigureLogs)
+                .ConfigureLogging(Configuration.ConfigureLogs)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

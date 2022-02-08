@@ -1,8 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using AccountService.Util.Enums;
+using AccountService.Models;
+using Cashflow.Common.Data.Enums;
 
-namespace AccountService.Models
+namespace AccountService.Data.Models
 {
     public class User : BaseEntity
     {

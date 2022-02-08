@@ -1,28 +1,25 @@
 using System;
-using System.Text;
 using AccountService.Data;
-using AccountService.EventBus.Publisher;
-using AccountService.Middlewares;
+using AccountService.Events.Publishers;
 using AccountService.Services;
 using AccountService.Services.interfaces;
-using AccountService.Util;
-using AccountService.Util.DataObjects;
-using AccountService.Util.Helpers;
-using AccountService.Util.Helpers.Interfaces;
 using AccountService.Util.Jwt;
-using AccountService.Util.Middleware;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Cashflow.Common.Data.DataObjects;
+using Cashflow.Common.Middlewares;
+using Cashflow.Common.Utils;
+using Cashflow.Common.Utils.Interfaces;
+using GreenPipes;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MySqlConnector;
+using RabbitMQ.Client;
 
 namespace AccountService
 {
@@ -33,15 +30,15 @@ namespace AccountService
         
         const int NUMBER_OF_RETRIES = 3;
         const int DELAY_IN_SECONDS = 3;
-        public IConfiguration Configuration { get; }
+        public IConfiguration Config { get; }
 
-        public Startup(IConfiguration configuration, IWebHostEnvironment env)
+        public Startup(IConfiguration config, IWebHostEnvironment env)
         {
-            Configuration = configuration;
+            Config = config;
             this.env = env;
 
             // startup logger:
-            var loggerFactory = LoggerFactory.Create(Utils.ConfigureLogs);
+            var loggerFactory = LoggerFactory.Create(Configuration.ConfigureLogs);
             logger = loggerFactory.CreateLogger<Startup>();
         }
 
@@ -59,47 +56,28 @@ namespace AccountService
                 logger.LogInformation("---> Using inMem Db");
                 services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
             }
-
+            
+            logger.LogInformation("---> Using RabbitMQ");
+            services.AddMassTransit(x =>
+            {
+                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                {
+                    cfg.UseHealthCheck(provider);
+                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"));
+                }));
+            });
+            services.AddMassTransitHostedService();
 
             var jwtSettings = new JwtSettings();
-            Configuration.Bind("JwtSettings", jwtSettings);
-
+            Config.Bind("JwtSettings", jwtSettings);
             services.AddSingleton(jwtSettings);
             services.AddTransient<JwtTokenCreator>();
-
-            services.AddAuthentication(i =>
-                {
-                    i.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    i.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    i.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                    i.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtSettings.Issuer,
-                        ValidAudience = jwtSettings.Audience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
-                        ClockSkew = jwtSettings.Expire
-                    };
-                    options.SaveToken = true;
-                    options.EventsType = typeof(CustomJwtBearerEvents);
-                })
-                .AddCookie(options =>
-                {
-                    options.Cookie.SameSite = SameSiteMode.Strict;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    options.Cookie.IsEssential = true;
-                });
+            services.AddJwtCookiesAuthentication(jwtSettings);
 
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
+            services.AddScoped<IMessageBusPublisher, MessageBusPublisher>();
 
             services.AddControllers();
             services.AddScoped<LoggedInUserDataHolder>();
@@ -107,16 +85,18 @@ namespace AccountService
 
             // configure DI for application services
             services.AddHttpContextAccessor();
-            
-            // register message bus:
-            services.AddSingleton<IMessageBusPublisher, MessageBusPublisher>();
 
             // register automapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            
+            // TODO:
+            // services.AddHealthChecks()
+            //     .AddMySql(connectionString, "MySQL")
+            //     .AddRabbitMQ(name: "Rabbit");
 
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "AccountService", Version = "v1" }); });
         }
-
+        
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -149,7 +129,7 @@ namespace AccountService
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
             
             // verify database connection:
-            Utils.TryConnecting<MySqlException>(NUMBER_OF_RETRIES, DELAY_IN_SECONDS,
+            NetworkUtils.TryConnecting<MySqlException>(NUMBER_OF_RETRIES, DELAY_IN_SECONDS,
                 () => {
                     using var serviceScope = app.ApplicationServices.CreateScope();
                     serviceScope.ServiceProvider.GetService<AppDbContext>();
@@ -164,11 +144,11 @@ namespace AccountService
 
         private string GetMySqlDatabaseConnectionString()
         {
-            return $"server={Configuration["DatabaseSettings:Url"]}; " +
-                   $"port={Configuration["DatabaseSettings:Port"]}; " +
-                   $"database={Configuration["DatabaseSettings:Name"]}; " +
-                   $"user={Configuration["DatabaseSettings:User"]}; " +
-                   $"password={Configuration["DatabaseSettings:Password"]};";
+            return $"server={Config["DatabaseSettings:Url"]}; " +
+                   $"port={Config["DatabaseSettings:Port"]}; " +
+                   $"database={Config["DatabaseSettings:Name"]}; " +
+                   $"user={Config["DatabaseSettings:User"]}; " +
+                   $"password={Config["DatabaseSettings:Password"]};";
         }
     }
 }

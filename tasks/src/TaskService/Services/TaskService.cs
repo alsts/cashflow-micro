@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
-using AccountService.Util;
+using Cashflow.Common.Data.DataObjects;
+using Cashflow.Common.Exceptions;
 using TaskService.Data.Repos.Interfaces;
 using TaskService.Dtos;
 using TaskService.Services.interfaces;
-using TaskService.Util.DataObjects;
 using TaskEntity = TaskService.Data.Models.Task;
 
 namespace TaskService.Services

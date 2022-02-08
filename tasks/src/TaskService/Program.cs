@@ -1,7 +1,7 @@
+using Cashflow.Common.Utils;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using TaskService.Util.Helpers;
 
 namespace TaskService
 {
@@ -24,7 +24,7 @@ namespace TaskService
                         .AddJsonFile("secrets/shared.secrets.json", optional: true)
                         .AddEnvironmentVariables();
                 })
-                .ConfigureLogging(Utils.ConfigureLogs)
+                .ConfigureLogging(Configuration.ConfigureLogs)
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }
 }

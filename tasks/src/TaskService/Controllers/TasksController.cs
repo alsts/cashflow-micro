@@ -1,13 +1,16 @@
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using Cashflow.Common.Data.Enums;
+using Cashflow.Common.Utils;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TaskService.Dtos;
 using TaskService.Services.interfaces;
-using TaskService.Util.Enums;
-using TaskService.Util.Helpers;
+using TaskService.Util;
 
 namespace TaskService.Controllers
 {
@@ -17,10 +20,14 @@ namespace TaskService.Controllers
     {
         private readonly ILogger<AccountController> logger;
         private readonly ITaskService taskService;
+        private readonly ISendEndpointProvider sendEndpoint;
+        private readonly IMapper mapper;
 
-        public AccountController(ITaskService taskService)
+        public AccountController(ITaskService taskService, ISendEndpointProvider sendEndpoint, IMapper mapper)
         {
             this.taskService = taskService;
+            this.sendEndpoint = sendEndpoint;
+            this.mapper = mapper;
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]

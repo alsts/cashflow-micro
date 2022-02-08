@@ -5,15 +5,16 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AccountService.Data;
+using AccountService.Data.Models;
 using AccountService.Dtos;
-using AccountService.Models;
 using AccountService.Services.interfaces;
 using AccountService.Util;
-using AccountService.Util.DataObjects;
-using AccountService.Util.Enums;
-using AccountService.Util.Helpers;
-using AccountService.Util.Helpers.Interfaces;
-using Utils = AccountService.Util.Helpers.Utils;
+using AccountService.Util.AccountService.Util.Helpers;
+using Cashflow.Common.Data.DataObjects;
+using Cashflow.Common.Data.Enums;
+using Cashflow.Common.Exceptions;
+using Cashflow.Common.Utils.Interfaces;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace AccountService.Services
 {
@@ -43,7 +44,7 @@ namespace AccountService.Services
                 throw new HttpStatusException(HttpStatusCode.BadRequest, "Username does not match requirements");
             }
 
-            if (!Utils.IsPasswordValid(userSignUpDto.Password))
+            if (!AuthUtils.IsPasswordValid(userSignUpDto.Password))
             {
                 throw new HttpStatusException(HttpStatusCode.BadRequest, "Password does not match requirements");
             }

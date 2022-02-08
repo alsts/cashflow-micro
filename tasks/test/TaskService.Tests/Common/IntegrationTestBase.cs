@@ -1,21 +1,15 @@
 using System;
-using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using AutoFixture;
+using Cashflow.Common.Data.DataObjects;
+using Cashflow.Common.Data.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
 using TaskService.Data;
 using TaskService.Data.Models;
-using TaskService.Dtos;
-using TaskService.Util.Enums;
-using TaskService.Util.Jwt;
 using Xunit;
-using Task = System.Threading.Tasks.Task;
 using TaskEntity = TaskService.Data.Models.Task;
 
 namespace TaskService.Tests.Common
@@ -35,7 +29,7 @@ namespace TaskService.Tests.Common
         protected TDbContext DbContext;
         protected readonly IFixture Fixture;
         protected readonly HttpClient TestClient;
-        protected readonly JwtTokenCreator JwtTokenCreator;
+        protected readonly FakeJwtTokenCreator FakeJwtTokenCreator;
         public readonly IConfiguration Configuration;
 
         public IntegrationTestBase()
@@ -51,7 +45,10 @@ namespace TaskService.Tests.Common
             TestClient = appFactory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
             Configuration = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IConfiguration>();
             DbContext = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<TDbContext>();
-            JwtTokenCreator = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<JwtTokenCreator>();
+
+            var jwtSettings = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<JwtSettings>();
+            
+            FakeJwtTokenCreator = new FakeJwtTokenCreator(jwtSettings);
             Fixture = new Fixture();
 
             SeedDB();
@@ -59,7 +56,7 @@ namespace TaskService.Tests.Common
 
         protected void AuthorizeRequestWithUser(HttpRequestMessage message, User user)
         {
-            var token = JwtTokenCreator.GenerateForUser(user);
+            var token = FakeJwtTokenCreator.GenerateForUser(user);
             message.Headers.Add("Cookie", $"X-Access-Token={token};");
         }
 

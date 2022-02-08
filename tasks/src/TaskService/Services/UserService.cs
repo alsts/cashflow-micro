@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using AccountService.Util;
+using Cashflow.Common.Data.DataObjects;
+using Cashflow.Common.Exceptions;
 using TaskService.Data.Models;
 using TaskService.Data.Repos.Interfaces;
 using TaskService.Services.interfaces;
-using TaskService.Util.DataObjects;
 
 namespace TaskService.Services
 {

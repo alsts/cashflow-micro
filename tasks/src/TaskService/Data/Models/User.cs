@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using TaskService.Util.Enums;
+using Cashflow.Common.Data.Enums;
 
 namespace TaskService.Data.Models
 {

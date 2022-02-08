@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AccountService.Data.Models;
 using AccountService.Models;
 using Microsoft.EntityFrameworkCore;
 
