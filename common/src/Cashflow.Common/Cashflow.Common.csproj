@@ -29,5 +29,21 @@
     <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="HealthChecks\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="HealthChecks\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="HealthChecks\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="HealthChecks\**" />
+  </ItemGroup>
   
 </Project>

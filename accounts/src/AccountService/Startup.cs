@@ -1,6 +1,6 @@
 using System;
 using AccountService.Data;
-using AccountService.Events.Publishers;
+using AccountService.Events;
 using AccountService.Services;
 using AccountService.Services.interfaces;
 using AccountService.Util.Jwt;
@@ -8,10 +8,11 @@ using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Middlewares;
 using Cashflow.Common.Utils;
 using Cashflow.Common.Utils.Interfaces;
-using GreenPipes;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using MySqlConnector;
-using RabbitMQ.Client;
+using Newtonsoft.Json;
 
 namespace AccountService
 {
@@ -27,8 +28,8 @@ namespace AccountService
     {
         private readonly IWebHostEnvironment env;
         private readonly ILogger<Startup> logger;
-        
-        const int NUMBER_OF_RETRIES = 3;
+
+        const int NUMBER_OF_RETRIES = 5;
         const int DELAY_IN_SECONDS = 3;
         public IConfiguration Config { get; }
 
@@ -56,14 +57,16 @@ namespace AccountService
                 logger.LogInformation("---> Using inMem Db");
                 services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
             }
-            
+
             logger.LogInformation("---> Using RabbitMQ");
             services.AddMassTransit(x =>
             {
                 x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
+                    cfg.AutoStart = true;
                     cfg.UseHealthCheck(provider);
-                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"));
+                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
+                        hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
                 }));
             });
             services.AddMassTransitHostedService();
@@ -77,7 +80,7 @@ namespace AccountService
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
-            services.AddScoped<IMessageBusPublisher, MessageBusPublisher>();
+            services.AddScoped<MessageBusPublisher>();
 
             services.AddControllers();
             services.AddScoped<LoggedInUserDataHolder>();
@@ -88,15 +91,15 @@ namespace AccountService
 
             // register automapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            
-            // TODO:
-            // services.AddHealthChecks()
-            //     .AddMySql(connectionString, "MySQL")
-            //     .AddRabbitMQ(name: "Rabbit");
+
+            // health checks:
+            services.AddHealthChecks()
+                .AddRabbitMQ($"amqp://{Config["RabbitMQSettings:Host"]}", name: "Rabbit")
+                .AddMySql(GetMySqlDatabaseConnectionString(), name: "MySql");
 
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "AccountService", Version = "v1" }); });
         }
-        
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -126,18 +129,24 @@ namespace AccountService
 
             // global exception handler
             app.UseMiddleware<ErrorHandlerMiddleware>();
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-            
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                // health checks:
+                endpoints.UseCustomHealthChecks("/api/accounts/health");
+            });
+
             // verify database connection:
             NetworkUtils.TryConnecting<MySqlException>(NUMBER_OF_RETRIES, DELAY_IN_SECONDS,
-                () => {
+                () =>
+                {
                     using var serviceScope = app.ApplicationServices.CreateScope();
                     serviceScope.ServiceProvider.GetService<AppDbContext>();
                     logger.LogInformation("---> MySQL Database connected");
                 },
                 retryCount => logger.LogInformation("---> Retrying to connect with MySQL: " + retryCount),
                 () => logger.LogError("---> Could not connect to MySQL"));
-            
+
             // db seeder:
             PrepDb.Seed(app, logger, env);
         }

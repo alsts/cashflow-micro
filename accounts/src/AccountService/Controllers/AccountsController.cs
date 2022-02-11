@@ -1,16 +1,12 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AccountService.Dtos;
-using AccountService.Events.Publishers;
+using AccountService.Events;
 using AccountService.Services.interfaces;
 using AccountService.Util.AccountService.Util.Helpers;
 using AccountService.Util.Jwt;
-using AutoMapper;
 using Cashflow.Common.Data.Enums;
-using Cashflow.Common.Events;
 using Cashflow.Common.Utils;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,12 +21,12 @@ namespace AccountService.Controllers
         private readonly ILogger<AccountController> logger;
         private readonly JwtTokenCreator jwtCreator;
         private readonly IUserService userService;
-        private readonly IMessageBusPublisher messageBusPublisher;
+        private readonly MessageBusPublisher messageBusPublisher;
 
         public AccountController(
             JwtTokenCreator jwtCreator,
             IUserService userService, 
-            IMessageBusPublisher messageBusPublisher)
+            MessageBusPublisher messageBusPublisher)
         {
             this.jwtCreator = jwtCreator;
             this.userService = userService;
@@ -49,11 +45,17 @@ namespace AccountService.Controllers
         [HttpPost("signup")]
         public async Task<IActionResult> SignUp([FromBody] UserSignUpDto model)
         {
+            if (!messageBusPublisher.IsEventBusHealthy())
+            {
+                return BadRequest();
+            }
+
             var user = await userService.SignUp(model);
             await messageBusPublisher.PublishCreatedUser(user);
 
             var token = jwtCreator.GenerateForUser(user);
-            Response.AppendAuthCookie(user, token);
+            Response.AppendAuthCookie(user, token); 
+
             return Ok(user.ToPublicDto());
         }
 

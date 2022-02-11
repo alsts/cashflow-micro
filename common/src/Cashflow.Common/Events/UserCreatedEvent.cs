@@ -1,8 +1,9 @@
 
 namespace Cashflow.Common.Events
 {
-    public class UserCreatedEvent : BaseEvent
+    public class UserCreatedEvent
     {
+        public int Id { get; set; }
         public string Email { get; set; }
         public string UserName { get; set; }
         public string PublicId { get; set; }
@@ -11,5 +12,6 @@ namespace Cashflow.Common.Events
         public string RefreshToken { get; set; }
         public int Gender { get; set; }
         public int RoleId { get; set; } 
+        public int Version { get; set; }
     }
 }

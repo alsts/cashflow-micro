@@ -1,10 +1,17 @@
+using System.Linq;
 using System.Text;
 using Cashflow.Common.Data.DataObjects;
+using Cashflow.Common.Utils.HealthChecks;
+using DefaultNamespace;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 
 namespace Cashflow.Common.Utils
 {
@@ -22,7 +29,30 @@ namespace Cashflow.Common.Utils
                 options.TimestampFormat = "[MM/dd/yyyy HH:mm:ss] ";
             });
         }
-        
+
+        public static void UseCustomHealthChecks(this IEndpointRouteBuilder endpoints, string url)
+        {
+            endpoints.MapHealthChecks(url, new HealthCheckOptions
+            {
+                ResponseWriter = async (context, report) =>
+                {
+                    context.Response.ContentType = "application/json";
+                    var response = new HealthCheckResponse
+                    {
+                        Status = report.Status.ToString(),
+                        HealthChecks = report.Entries.Select(x => new IndividualHealthCheckResponse
+                        {
+                            Component = x.Key,
+                            Status = x.Value.Status.ToString(),
+                            Description = x.Value.Description
+                        }),
+                        HealthCheckDuration = report.TotalDuration
+                    };
+                    await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
+                }
+            });
+        }
+
         public static void AddJwtCookiesAuthentication(this IServiceCollection services, JwtSettings jwtSettings )
         {
             services.AddAuthentication(i =>

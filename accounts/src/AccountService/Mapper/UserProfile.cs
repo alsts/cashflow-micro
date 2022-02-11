@@ -8,8 +8,8 @@ namespace AccountService.Mapper
     {
         public UserProfile()
         {
-            CreateMap<UserCreatedEvent, User>().ReverseMap();
-            CreateMap<UserUpdatedEvent, User>().ReverseMap();
+            CreateMap<User, UserCreatedEvent>().ReverseMap();
+            CreateMap<User, UserUpdatedEvent>().ReverseMap();
         }
     }
 }

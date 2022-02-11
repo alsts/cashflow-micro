@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using TaskService.Data.Models;
 using Task = System.Threading.Tasks.Task;
 
-namespace TaskService.Events.Consumers
+namespace TaskService.Events
 {
     public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
     {
