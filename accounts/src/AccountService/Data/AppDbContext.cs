@@ -30,7 +30,10 @@ namespace AccountService.Data
         {
             foreach (var entity in ChangeTracker
                 .Entries()
-                .Where(x => x.Entity is BaseEntity && x.State == EntityState.Modified)
+                .Where(x => x.Entity is BaseEntity && 
+                            x.State == EntityState.Modified && 
+                            // dont increase version if refreshToken was modified for User
+                            !(x.Entity is User && x.Property("RefreshToken").CurrentValue != x.Property("RefreshToken").OriginalValue))
                 .Select(x => x.Entity)
                 .Cast<BaseEntity>())
             {

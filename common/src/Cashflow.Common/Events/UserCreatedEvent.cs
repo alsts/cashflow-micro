@@ -3,7 +3,6 @@ namespace Cashflow.Common.Events
 {
     public class UserCreatedEvent
     {
-        public int Id { get; set; }
         public string Email { get; set; }
         public string UserName { get; set; }
         public string PublicId { get; set; }

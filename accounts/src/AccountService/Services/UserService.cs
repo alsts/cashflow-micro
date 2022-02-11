@@ -14,7 +14,6 @@ using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Exceptions;
 using Cashflow.Common.Utils.Interfaces;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace AccountService.Services
 {
@@ -99,7 +98,7 @@ namespace AccountService.Services
 
             if (user == null)
             {
-                throw new HttpStatusException(HttpStatusCode.NotFound, "User with this email and password not found");
+                throw new HttpStatusException(HttpStatusCode.NotFound, "User with this username and password not found");
             }
 
             await UpdateRefreshTokenForUser(user);
@@ -118,7 +117,7 @@ namespace AccountService.Services
             {
                 throw new HttpStatusException(HttpStatusCode.Unauthorized, "User not found");
             }
-            return user.WithoutPassword();
+            return user;
         }
 
         public async Task<User> Update(UserUpdateDto userUpdateDto)

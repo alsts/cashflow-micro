@@ -37,14 +37,14 @@ namespace AccountService.Events
         public async Task PublishCreatedUser(User user)
         {
             var eventMessage = mapper.Map<UserCreatedEvent>(user);
-            logger.LogInformation("Sending User Created Event: " + eventMessage.Id + ",  version: " + eventMessage.Version);
+            logger.LogInformation($"[User Created Event] - Published [User: {eventMessage.PublicId}, Version: {eventMessage.Version}]");
             await publishEndpoint.Publish(eventMessage);
         }
 
         public async Task PublishUpdatedUser(User user)
         {
             var eventMessage = mapper.Map<UserUpdatedEvent>(user);
-            logger.LogInformation("Sending User Updated Event: " + eventMessage.Id + ",  version: " + eventMessage.Version);
+            logger.LogInformation($"[User Updated Event] - Published [User: {eventMessage.PublicId}, Version: {eventMessage.Version}]");
             await publishEndpoint.Publish(eventMessage);
         }
     }

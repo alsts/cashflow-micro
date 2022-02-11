@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: rabbitmq-depl
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: rabbitmq
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: rabbitmq
-          image: rabbitmq:3-management
+          image: alexsts/rabbitmq-with-plugins 
           ports: 
             - containerPort: 15672
               name: rbmq-mgmt-port

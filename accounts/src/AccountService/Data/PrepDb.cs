@@ -85,7 +85,7 @@ namespace AccountService.Data
                     Password = passwordHasher.Hash("password"),
                     CreatedAt = new DateTime(),
                     IsActive = true,
-                    PublicId = Guid.NewGuid().ToString(),
+                    PublicId = "cashflow-admin-user",
                     RefreshToken = null,
                     Gender = Genders.Male,
                     RoleId = (int) Roles.Admin
@@ -101,29 +101,13 @@ namespace AccountService.Data
                     Password = passwordHasher.Hash("password"),
                     CreatedAt = new DateTime(),
                     IsActive = true,
-                    PublicId = Guid.NewGuid().ToString(),
+                    PublicId = "cashflow-superadmin-user",
                     RefreshToken = null,
                     Gender = Genders.Male,
                     RoleId = (int) Roles.SuperAdmin
                 };
-                
-                var user = new User
-                {
 
-                    Email = "user@casflow.com",
-                    UserName = "user",
-                    Firstname = "User",
-                    Lastname = "User",
-                    Password = passwordHasher.Hash("password"),
-                    CreatedAt = new DateTime(),
-                    IsActive = true,
-                    PublicId = Guid.NewGuid().ToString(),
-                    RefreshToken = null,
-                    Gender = Genders.Male,
-                    RoleId = (int) Roles.User
-                };
-
-                context.Users.AddRange(superAdminUser, adminUser, user);
+                context.Users.AddRange(superAdminUser, adminUser);
                 context.SaveChanges();
             }
         }

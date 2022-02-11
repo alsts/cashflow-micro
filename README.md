@@ -17,3 +17,8 @@ kubectl config set-context --current --namespace=ingress-nginx
 
 kubectl create secret generic mssql --from-literal SA_PASSWORD=4h5J3k4h5kJ3h5k3j!
 kubectl create secret generic secret-shared --from-file=./shared.secrets.json
+
+
+Event bus uses - versioned events to determine the order
+Order mismatch - moves event back to queue for further processing
+

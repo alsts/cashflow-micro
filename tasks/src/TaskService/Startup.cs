@@ -50,51 +50,6 @@ namespace TaskService
                 logger.LogInformation("---> Using MySql Db");
                 var connectionString = GetMySqlDatabaseConnectionString();
                 services.AddDbContext<AppDbContext>(opt => opt.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-
-                logger.LogInformation("---> Using RabbitMQ");
-                services.AddMassTransit(x =>
-                {
-                    x.AddConsumer<UserCreatedConsumer>();
-                    x.AddConsumer<UserUpdatedConsumer>();
-                    x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
-                    {
-                        cfg.AutoStart = true;
-                        cfg.UseHealthCheck(provider);
-                        cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
-                            hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
-
-                        cfg.ReceiveEndpoint(Queue.Tasks.UserCreated, ep =>
-                        {
-                            ep.Exclusive = false;
-                            ep.AutoDelete = false;
-                            ep.Durable = true;
-                            ep.PrefetchCount = 16;
-                            ep.UseMessageRetry(r => r.Interval(2, 100));
-                            ep.ConfigureConsumer<UserCreatedConsumer>(provider);
-
-                            // dont move messages to error queue, just put them back for redelivery
-                            ep.DiscardFaultedMessages();
-                        });
-
-                        cfg.ReceiveEndpoint(Queue.Tasks.UserUpdated, ep =>
-                        {
-                            ep.Exclusive = false;
-                            ep.AutoDelete = false;
-                            ep.Durable = true;
-                            ep.PrefetchCount = 16;
-                            ep.UseMessageRetry(r => r.Interval(2, 100));
-                            ep.ConfigureConsumer<UserUpdatedConsumer>(provider);
-
-                            // dont move messages to error queue, just put them back for redelivery
-                            ep.DiscardFaultedMessages();
-                        });
-                    }));
-                });
-
-                services.AddMassTransitHostedService();
-
-                services.AddScoped<UserCreatedConsumer>();
-                services.AddScoped<UserUpdatedConsumer>();
             }
             else
             {
@@ -102,6 +57,47 @@ namespace TaskService
                 services.AddDbContext<AppDbContext>(opt =>
                     opt.UseInMemoryDatabase("InMem"));
             }
+
+            logger.LogInformation("---> Using RabbitMQ");
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<UserCreatedConsumer>();
+                x.AddConsumer<UserUpdatedConsumer>();
+                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                {
+                    cfg.AutoStart = true;
+                    cfg.UseHealthCheck(provider);
+                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
+                        hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
+                    
+                    // retry delivering messages from rabbitMQ:
+                    cfg.UseDelayedExchangeMessageScheduler();
+
+                    cfg.ReceiveEndpoint(Queue.Tasks.UserCreated, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<UserCreatedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+
+                    cfg.ReceiveEndpoint(Queue.Tasks.UserUpdated, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<UserUpdatedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+                }));
+            });
+
+            services.AddMassTransitHostedService();
+            services.AddScoped<UserCreatedConsumer>();
+            services.AddScoped<UserUpdatedConsumer>();
 
             var jwtSettings = new JwtSettings();
             Config.Bind("JwtSettings", jwtSettings);
@@ -129,7 +125,7 @@ namespace TaskService
             services.AddHealthChecks()
                 .AddRabbitMQ($"amqp://{Config["RabbitMQSettings:Host"]}", name: "Rabbit")
                 .AddMySql(GetMySqlDatabaseConnectionString(), name: "MySql");
-            
+
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "AccountService", Version = "v1" }); });
         }
 
@@ -165,11 +161,11 @@ namespace TaskService
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                
+
                 // health checks:
                 endpoints.UseCustomHealthChecks("/api/tasks/health");
             });
-            
+
             // verify database connection:
             NetworkUtils.TryConnecting<MySqlException>(NUMBER_OF_RETRIES, DELAY_IN_SECONDS,
                 () =>

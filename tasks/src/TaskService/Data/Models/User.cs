@@ -17,8 +17,7 @@ namespace TaskService.Data.Models
         public int RoleId { get; set; }
         
         public bool IsBanned { get; set; } = false;
-        
-        public ICollection<Task> Tasks { get; set; } = new List<Task>();
 
+        public ICollection<Task> Tasks { get; set; } = new List<Task>();
     }
 }

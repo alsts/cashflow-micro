@@ -369,7 +369,7 @@ namespace AccountService.Tests.Api
         }
         
         [Fact]
-        public async Task Update_with_blank_required_fields_return_Unauthorized()
+        public async Task Update_with_blank_required_fields_return_BadRequest()
         {
             // Arrange
             Arrange(dbContext =>

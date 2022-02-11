@@ -82,6 +82,11 @@ namespace AccountService.Controllers
         [HttpPut("")]
         public async Task<IActionResult> Update([FromBody] UserUpdateDto model)
         {
+            if (!messageBusPublisher.IsEventBusHealthy())
+            {
+                return BadRequest();
+            }
+            
             var user = await userService.Update(model);
             await messageBusPublisher.PublishUpdatedUser(user);
             
