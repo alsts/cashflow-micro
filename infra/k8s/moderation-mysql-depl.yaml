@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moderation-mysql
+spec:
+  selector:
+    matchLabels:
+      app: moderation-mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: moderation-mysql
+    spec:
+      containers:
+        - image: mysql:8.0
+          name: mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mssql
+                  key: SA_PASSWORD
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: moderation-mysql-pvc                   
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: moderation-mysql-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: moderation-mysql
+  ports:
+    - name: mssql
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-moderation-loadbalancer
+spec:
+  type: LoadBalancer
+  selector:
+    app: moderation-mysql
+  ports:
+    - protocol: TCP
+      port: 3322
+      targetPort: 3306

@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AccountService.Data.Models;
-using AccountService.Models;
+using AccountService.Data.Repos.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace AccountService.Data
+namespace AccountService.Data.Repos
 {
     public class UserRepo : IUserRepo
     {

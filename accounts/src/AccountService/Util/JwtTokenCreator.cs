@@ -4,7 +4,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AccountService.Data.Models;
-using AccountService.Models;
 using Cashflow.Common.Data.DataObjects;
 using Microsoft.IdentityModel.Tokens;
 

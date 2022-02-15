@@ -1,32 +1,41 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AccountService.Data.Models;
-using AccountService.Models;
+using Cashflow.Common.Data.DataObjects;
+using Cashflow.Common.Data.Models;
+using Cashflow.Common.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountService.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> opt) : base(opt) {}
+        private readonly LoggedInUserDataHolder loggedInUserDataHolder;
+
+        public AppDbContext(DbContextOptions<AppDbContext> opt, LoggedInUserDataHolder loggedInUserDataHolder) : base(opt)
+        {
+            this.loggedInUserDataHolder = loggedInUserDataHolder;
+        }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {
-            UpdateVersionedEntities();
+            ConfigureModifiedEntitiesChanges();
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 
         public override int SaveChanges()
         {
-            UpdateVersionedEntities();
+            DatabaseUtils.ConfigureAddedEntitiesChanges(ChangeTracker, loggedInUserDataHolder);
+            ConfigureModifiedEntitiesChanges();
             return base.SaveChanges();
         }
 
-        private void UpdateVersionedEntities()
+        private void ConfigureModifiedEntitiesChanges()
         {
             foreach (var entity in ChangeTracker
                 .Entries()
@@ -38,6 +47,8 @@ namespace AccountService.Data
                 .Cast<BaseEntity>())
             {
                 entity.Version += 1;
+                entity.LastUpdatedAt = DateTime.Now;
+                entity.LastUpdatedByUserId = loggedInUserDataHolder?.UserID ?? "";
             }
         }
     }

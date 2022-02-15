@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AccountService.Data.Models;
 using AutoMapper;
 using Cashflow.Common.Events;
+using Cashflow.Common.Events.Accounts;
 using MassTransit;
 using MassTransit.Monitoring.Health;
 using Microsoft.Extensions.Logging;

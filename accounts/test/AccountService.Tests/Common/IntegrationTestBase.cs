@@ -4,7 +4,6 @@ using System.Net.Http;
 using AccountService.Data;
 using AccountService.Data.Models;
 using AccountService.Dtos;
-using AccountService.Models;
 using AutoFixture;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Utils.Interfaces;

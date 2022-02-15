@@ -24,3 +24,17 @@ spec:
                 name: tasks-clusterip-srv
                 port:
                   number: 80
+          - path: /api/money/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: money-clusterip-srv
+                port:
+                  number: 80
+          - path: /api/moderation/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: moderation-clusterip-srv
+                port:
+                  number: 80

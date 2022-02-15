@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AccountService.Data.Models;
 using AccountService.Dtos;
-using AccountService.Models;
 
 namespace AccountService.Services.interfaces
 {

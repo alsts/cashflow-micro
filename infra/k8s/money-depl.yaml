@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: money-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: money
+  template:
+    metadata:
+      labels:
+        app: money
+    spec:
+      containers:
+        - name: money
+          image: alexsts/cashflow-money:latest
+          env:
+          - name: "ASPNETCORE_ENVIRONMENT"
+            value: "Production"
+          volumeMounts:
+          - name: secrets
+            mountPath: /app/secrets
+            readOnly: true
+      volumes:
+        - name: secrets
+          secret:
+            secretName: secret-shared
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: money-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: money
+  ports:
+    - name: money
+      protocol: TCP
+      port: 80
+      targetPort: 80

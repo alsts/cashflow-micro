@@ -1,6 +1,6 @@
 using AccountService.Data.Models;
 using AutoMapper;
-using Cashflow.Common.Events;
+using Cashflow.Common.Events.Accounts;
 
 namespace AccountService.Mapper
 {

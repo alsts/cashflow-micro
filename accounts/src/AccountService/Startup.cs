@@ -1,5 +1,7 @@
 using System;
 using AccountService.Data;
+using AccountService.Data.Repos;
+using AccountService.Data.Repos.Interfaces;
 using AccountService.Events;
 using AccountService.Services;
 using AccountService.Services.interfaces;

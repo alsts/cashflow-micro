@@ -1,0 +1,18 @@
+name: tests-money
+
+on: 
+  pull_request:
+    paths: 
+      - 'money/**'
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install Dependencies, Build, Run Tests
+        run: cd money && dotnet restore && dotnet build && dotnet test

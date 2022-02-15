@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AccountService.Data.Models;
-using AccountService.Models;
 
-namespace AccountService.Data
+namespace AccountService.Data.Repos.Interfaces
 {
     public interface IUserRepo
     {

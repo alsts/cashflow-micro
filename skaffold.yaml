@@ -1,9 +1,11 @@
-apiVersion: skaffold/v2alpha3
+apiVersion: skaffold/v2beta22
 kind: Config
 deploy:
   kubectl:
     manifests:
       - ./infra/k8s/*
+  logs:
+    prefix: podAndContainer
 build:
   local:
     push: true
@@ -14,6 +16,14 @@ build:
         dockerfile: Dockerfile
     - image: alexsts/cashflow-tasks
       context: tasks
+      docker:
+        dockerfile: Dockerfile
+    - image: alexsts/cashflow-money
+      context: money
+      docker:
+        dockerfile: Dockerfile
+    - image: alexsts/cashflow-moderation
+      context: moderation
       docker:
         dockerfile: Dockerfile
 

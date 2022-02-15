@@ -1,6 +1,5 @@
 using AccountService.Data.Models;
 using AccountService.Dtos;
-using AccountService.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace AccountService.Util

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: money-mysql
+spec:
+  selector:
+    matchLabels:
+      app: money-mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: money-mysql
+    spec:
+      containers:
+        - image: mysql:8.0
+          name: mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mssql
+                  key: SA_PASSWORD
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: money-mysql-pvc                   
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: money-mysql-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: money-mysql
+  ports:
+    - name: mssql
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-money-loadbalancer
+spec:
+  type: LoadBalancer
+  selector:
+    app: money-mysql
+  ports:
+    - protocol: TCP
+      port: 3322
+      targetPort: 3306

@@ -1,7 +1,6 @@
 using System;
 using AutoMapper;
-using Cashflow.Common.Events;
-using Cashflow.Common.Exceptions;
+using Cashflow.Common.Events.Accounts;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using TaskService.Data.Models;

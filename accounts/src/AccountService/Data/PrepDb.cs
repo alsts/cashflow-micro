@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using AccountService.Data.Models;
-using AccountService.Models;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Utils.Interfaces;
 using Microsoft.AspNetCore.Builder;

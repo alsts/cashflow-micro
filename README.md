@@ -22,3 +22,9 @@ kubectl create secret generic secret-shared --from-file=./shared.secrets.json
 Event bus uses - versioned events to determine the order
 Order mismatch - moves event back to queue for further processing
 
+
+-------------------------------------------------------------------------------------------------------
+dotnet new webapi -n ModerationService 
+dotnet new xunit -n ModerationService.Tests
+dotnet new sln --name ModerationService
+dotnet sln ModerationService.sln add src/ModerationService/ModerationService.csproj test/ModerationService.Tests/ModerationService.Tests.csproj

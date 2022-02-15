@@ -1,7 +1,6 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace AccountService.Models
+namespace AccountService.Data.Models
 {
     public class Role
     {

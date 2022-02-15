@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AccountService.Data;
 using AccountService.Data.Models;
+using AccountService.Data.Repos.Interfaces;
 using AccountService.Dtos;
 using AccountService.Services.interfaces;
 using AccountService.Util;

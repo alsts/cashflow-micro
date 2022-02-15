@@ -1,5 +1,5 @@
 using AutoMapper;
-using Cashflow.Common.Events;
+using Cashflow.Common.Events.Accounts;
 using TaskService.Data.Models;
 
 namespace TaskService.Mapper
