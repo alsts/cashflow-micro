@@ -3,7 +3,7 @@ using System;
 
 namespace Cashflow.Common.Events.Tasks
 {
-    public class TaskUpdatedEventProps : GenericEventProps
+    public class TaskUpdatedEvent : GenericEventProps
     {
         public string Title { get; set; }
         public string Description { get; set; }

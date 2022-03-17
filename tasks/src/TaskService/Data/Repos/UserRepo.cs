@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TaskService.Data.Models;
+using TaskService.Data.Models.External;
 using TaskService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
 

@@ -9,5 +9,6 @@ namespace ModerationService.Data.Repos.Interfaces
         Task<TaskEntity> GetByPublicId(string publicId);
         Task Save(TaskEntity task);
         Task<IEnumerable<TaskEntity>> GetAll();
+        Task<IEnumerable<TaskEntity>> GetTasksPendingApproval();
     }
 }

@@ -7,9 +7,11 @@ using AccountService.Services;
 using AccountService.Services.interfaces;
 using AccountService.Util.Jwt;
 using Cashflow.Common.Data.DataObjects;
+using Cashflow.Common.Events;
 using Cashflow.Common.Middlewares;
 using Cashflow.Common.Utils;
 using Cashflow.Common.Utils.Interfaces;
+using GreenPipes;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -52,7 +54,14 @@ namespace AccountService
             {
                 logger.LogInformation("---> Using MySql Db");
                 var connectionString = GetMySqlDatabaseConnectionString();
-                services.AddDbContext<AppDbContext>(opt => opt.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+                services.AddDbContext<AppDbContext>(opt =>
+                    {
+                        opt.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), builder =>
+                        {
+                            builder.CommandTimeout(100);
+                            builder.EnableRetryOnFailure(5);
+                        });
+                    });
             }
             else
             {
@@ -63,12 +72,26 @@ namespace AccountService
             logger.LogInformation("---> Using RabbitMQ");
             services.AddMassTransit(x =>
             {
+                x.AddConsumer<UserBannedConsumer>();
                 x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
                     cfg.AutoStart = true;
                     cfg.UseHealthCheck(provider);
                     cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
                         hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
+                    
+                    // retry delivering messages from rabbitMQ:
+                    cfg.UseDelayedExchangeMessageScheduler();
+                    
+                    cfg.ReceiveEndpoint(Queue.Accounts.UserBanned, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<UserBannedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
                 }));
             });
             services.AddMassTransitHostedService();
@@ -159,7 +182,8 @@ namespace AccountService
                    $"port={Config["DatabaseSettings:Port"]}; " +
                    $"database={Config["DatabaseSettings:Name"]}; " +
                    $"user={Config["DatabaseSettings:User"]}; " +
-                   $"password={Config["DatabaseSettings:Password"]};";
+                   $"password={Config["DatabaseSettings:Password"]};" + 
+                   "connect timeout=100;";
         }
     }
 }

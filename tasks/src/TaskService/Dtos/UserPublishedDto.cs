@@ -2,7 +2,7 @@ using System;
 
 namespace TaskService.Dtos
 {
-    public class UserPublishedDto : GenericEventDto
+    public class UserPublishedDto
     {
         public string Id { get; set; }
         public string Username { get; set; }

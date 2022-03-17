@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -40,6 +41,7 @@ namespace ModerationService.Services
             }
 
             task.TaskStatus = (int)TaskStatus.PendingApproval;
+            task.ApprovedAt = DateTime.Now;
             await taskRepo.Save(task);
 
             return task;

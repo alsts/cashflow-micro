@@ -9,20 +9,23 @@ using TaskEntity = MoneyService.Data.Models.Task;
 
 namespace MoneyService.Events.Consumers
 {
-    public class TaskUpdatedConsumer : IConsumer<TaskUpdatedEvent>
+    public class TaskJobUpdatedConsumer : IConsumer<TaskJobUpdatedEvent>
     {
         private readonly IMapper mapper;
-        private readonly ILogger<TaskUpdatedConsumer> logger;
+        private readonly ILogger<TaskJobUpdatedConsumer> logger;
         private readonly ITaskRepo taskRepo;
-        public TaskUpdatedConsumer(IMapper mapper, ILogger<TaskUpdatedConsumer> logger, ITaskRepo taskRepo)
+        public TaskJobUpdatedConsumer(IMapper mapper, ILogger<TaskJobUpdatedConsumer> logger, ITaskRepo taskRepo)
         {
             this.mapper = mapper;
             this.logger = logger;
             this.taskRepo = taskRepo;
         }
 
-        public async Task Consume(ConsumeContext<TaskUpdatedEvent> context)
+        public async Task Consume(ConsumeContext<TaskJobUpdatedEvent> context)
         {
+            // TODO: declined 
+            // TODO: completed 
+            
             var taskFromEvent = mapper.Map<TaskEntity>(context.Message);
             
             if (taskFromEvent == null)

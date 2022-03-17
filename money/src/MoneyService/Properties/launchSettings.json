@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "ModerationService": {
+    "MoneyService": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

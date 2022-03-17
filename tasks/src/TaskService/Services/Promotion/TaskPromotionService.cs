@@ -4,9 +4,10 @@ using System.Net;
 using System.Threading.Tasks;
 using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Exceptions;
-using TaskService.Controllers;
+using TaskService.Controllers.Promotion;
 using TaskService.Data.Repos.Interfaces;
 using TaskService.Dtos;
+using TaskService.Dtos.Promotion;
 using TaskService.Services.General.interfaces;
 using TaskService.Services.Promotion.interfaces;
 using TaskEntity = TaskService.Data.Models.Task;
@@ -122,7 +123,7 @@ namespace TaskService.Services.Promotion
             throw new NotImplementedException();
         }
 
-        public Task GetJobsByQuery(TasksQuery tasksQuery)
+        public Task<IEnumerable<TaskEntity>> GetJobsByQuery(TasksQuery tasksQuery)
         {
             throw new NotImplementedException();
         }

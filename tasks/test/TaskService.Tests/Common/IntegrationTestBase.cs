@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TaskService.Data;
 using TaskService.Data.Models;
+using TaskService.Data.Models.External;
 using Xunit;
 using TaskEntity = TaskService.Data.Models.Task;
 

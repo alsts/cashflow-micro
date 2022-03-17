@@ -6,7 +6,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace TaskService.Services.Income.interfaces
 {
-    public interface ITaskJobsIncomeService
+    public interface ITaskJobIncomeService
     {
         Task<IEnumerable<TaskJob>> GetForCurrentUser();
         Task<TaskJob> GetById(string jobId);

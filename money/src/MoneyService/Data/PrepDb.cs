@@ -50,7 +50,6 @@ namespace MoneyService.Data
                 Lastname = "Admin",
                 PublicId = "cashflow-admin-user",
                 RefreshToken = null,
-                Gender = Genders.Male,
                 RoleId = (int)Roles.Admin
             };
 
@@ -62,7 +61,6 @@ namespace MoneyService.Data
                 Lastname = "Superadmin",
                 PublicId = "cashflow-superadmin-user",
                 RefreshToken = null,
-                Gender = Genders.Male,
                 RoleId = (int)Roles.SuperAdmin
             };
 

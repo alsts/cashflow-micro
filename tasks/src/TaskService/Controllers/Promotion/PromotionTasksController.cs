@@ -1,14 +1,13 @@
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Cashflow.Common.Data.Enums;
-using Cashflow.Common.Utils;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TaskService.Dtos;
-using TaskService.Services.interfaces;
+using TaskService.Dtos.Promotion;
+using TaskService.Services.Promotion.interfaces;
 
 namespace TaskService.Controllers.Promotion
 {
@@ -18,67 +17,64 @@ namespace TaskService.Controllers.Promotion
     public class PromotionTasksController : ControllerBase
     {
         private readonly ILogger<PromotionTasksController> logger;
-        private readonly ITaskService taskService;
-        private readonly ISendEndpointProvider sendEndpoint;
+        private readonly ITaskPromotionService taskPromotionService;
         private readonly IMapper mapper;
 
-        public PromotionTasksController(ITaskService taskService, ISendEndpointProvider sendEndpoint, IMapper mapper)
+        public PromotionTasksController(
+            ITaskPromotionService taskPromotionService, 
+            IMapper mapper)
         {
-            this.taskService = taskService;
-            this.sendEndpoint = sendEndpoint;
+            this.taskPromotionService = taskPromotionService;
             this.mapper = mapper;
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] TaskCreateDto model)
-        {
-            var task = await taskService.Create(model);
-            
-            // return CreatedAtRoute(nameof(SignUp), new { Id = user.PublicId }, user.ToPublicDto());
-            return Ok(task.ToPublicDto());
-        }
-        
-        [HttpPut("{publicId}")]
-        public async Task<IActionResult> Update([FromBody] TaskUpdateDto model, string publicId)
-        {
-            var task = await taskService.Update(model, publicId);
-            return Ok(task.ToPublicDto());
-        }
-
-        [HttpGet("{publicId}")]
-        public async Task<IActionResult> GetById(string publicId)
-        {
-            var task = await taskService.GetByPublicId(publicId);
-            return Ok(task.ToPublicDto());
         }
         
         [HttpGet]
         public async Task<IActionResult> GetUserTasks()
         {
-            var tasks = await taskService.GetForCurrentUser();
-            return Ok(tasks.Select(t => t.ToPublicDto()));
+            var tasks = await taskPromotionService.GetForCurrentUser();
+            return Ok(tasks.Select(task => mapper.Map<PromotionTaskDto>(task)));
+        }
+        
+        [HttpGet("{publicId}")]
+        public async Task<IActionResult> GetById(string publicId)
+        {
+            var task = await taskPromotionService.GetByPublicId(publicId);
+            return Ok(mapper.Map<PromotionTaskDto>(task));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] TaskCreateDto model)
+        {
+            var task = await taskPromotionService.Create(model);
+            return Ok(mapper.Map<PromotionTaskDto>(task));
+        }
+        
+        [HttpPut("{publicId}")]
+        public async Task<IActionResult> Update([FromBody] TaskUpdateDto model, string publicId)
+        {
+            var task = await taskPromotionService.Update(model, publicId);
+            return Ok(mapper.Map<PromotionTaskDto>(task));
         }
         
         [HttpPost("{publicId}/start")]
         public async Task<IActionResult> StartTask(string publicId)
         {
-            await taskService.StartTask(publicId);
+            await taskPromotionService.StartTask(publicId);
             return Ok();
         }
         
         [HttpPost("{publicId}/stop")]
         public async Task<IActionResult> StopTask(string publicId)
         {
-            await taskService.StopTask(publicId);
+            await taskPromotionService.StopTask(publicId);
             return Ok();
         }
 
-        [AuthorizeRoles(Roles.Admin, Roles.SuperAdmin)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var tasks = await taskService.GetAll();
-            return Ok(tasks.Select(t => t.ToPublicDto()));
+            var tasks = await taskPromotionService.GetAll();
+            return Ok(tasks.Select(task => mapper.Map<PromotionTaskDto>(task)));
         }
     }
 }

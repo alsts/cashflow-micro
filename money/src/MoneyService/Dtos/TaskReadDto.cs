@@ -1,12 +1,13 @@
 using System;
 
-namespace TaskService.Dtos
+namespace MoneyService.Dtos
 {
     public class TaskReadDto
     {
-        public string Title { get; set; }
+        public decimal Amount { get; set; }
         public string Description { get; set; }
-        public string Id { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public int TransactionStatus { get; set; }
+        public int TransactionType { get; set; }
+        public int UserId { get; set; }
     }
 }

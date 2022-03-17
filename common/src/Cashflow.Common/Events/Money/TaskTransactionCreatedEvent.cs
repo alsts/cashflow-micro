@@ -5,9 +5,10 @@ namespace Cashflow.Common.Events.Money
 {
     public class TaskTransactionCreatedEvent
     {
-        public float Amount { get; set; }
+        public decimal Amount { get; set; }
+        public string Description { get; set; }
         public int TransactionStatus { get; set; }
-        public string TransactionType { get; set; }
+        public int TaskId { get; set; }
         // Generic:
         public string PublicId { get; set; }
         public DateTime CreatedAt { get; set; }

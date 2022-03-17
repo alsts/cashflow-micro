@@ -3,11 +3,11 @@ using AutoMapper;
 using Cashflow.Common.Events.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using ModerationService.Data.Repos.Interfaces;
+using MoneyService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
-using TaskEntity = ModerationService.Data.Models.Task;
+using TaskEntity = MoneyService.Data.Models.Task;
 
-namespace ModerationService.Events.Consumers
+namespace MoneyService.Events.Consumers
 {
     public class TaskCreatedConsumer : IConsumer<TaskCreatedEvent>
     {

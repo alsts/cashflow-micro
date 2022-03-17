@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TaskService.Data.Models;
 
-namespace TaskService.Services.interfaces
+namespace TaskService.Services.General.interfaces
 {
     public interface IUserService
     {

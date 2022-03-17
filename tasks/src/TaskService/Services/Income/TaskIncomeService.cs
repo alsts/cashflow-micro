@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Cashflow.Common.Data.DataObjects;
-using Cashflow.Common.Exceptions;
-using TaskService.Controllers;
+using TaskService.Controllers.Promotion;
 using TaskService.Data.Repos.Interfaces;
 using TaskService.Dtos;
+using TaskService.Dtos.Promotion;
+using TaskService.Services.General.interfaces;
 using TaskService.Services.Income.interfaces;
-using TaskService.Services.interfaces;
 using TaskEntity = TaskService.Data.Models.Task;
 
 namespace TaskService.Services.Income
@@ -29,76 +28,24 @@ namespace TaskService.Services.Income
             this.loggedInUserDataHolder = loggedInUserDataHolder;
         }
 
-        public async Task<TaskEntity> Create(TaskCreateDto taskCreateDto)
+        public Task<TaskEntity> Create(TaskCreateDto taskCreateDto)
         {
-            if (taskCreateDto.Title == null || taskCreateDto.Description == null)
-            {
-                throw new HttpStatusException(HttpStatusCode.BadRequest, "Please fill all required fields");
-            }
-            
-            var user = await userService.GetCurrent();
-
-            var task = new TaskEntity
-            {
-                Title = taskCreateDto.Title,
-                Description = taskCreateDto.Description,
-                PublicId = Guid.NewGuid().ToString(),
-                CreatedAt = DateTime.Now,
-                IsActive = false,
-                UserId = user.Id
-            };
-            
-            await taskRepo.Save(task);
-
-            task = await taskRepo.GetByPublicId(task.PublicId);
-            if (task == null)
-            {
-                throw new HttpStatusException(HttpStatusCode.BadRequest, "Task not created");
-            }
-
-            return task;
+            throw new NotImplementedException();
         }
 
-        public async Task<TaskEntity> Update(TaskUpdateDto taskUpdateDto, string publicId)
+        public Task<TaskEntity> Update(TaskUpdateDto model, string publicId)
         {
-            if (String.IsNullOrEmpty(taskUpdateDto.Title) ||
-                String.IsNullOrEmpty(taskUpdateDto.Description))
-            {
-                throw new HttpStatusException(HttpStatusCode.BadRequest, "Please fill all required fields");
-            }
-
-            var task = await taskRepo.GetByPublicId(publicId);
-            if (task == null)
-            {
-                throw new HttpStatusException(HttpStatusCode.NotFound, "Task not found");
-            }
-
-            var user = await userService.GetCurrent();
-            if (task.UserId != user.Id)
-            {
-                throw new HttpStatusException(HttpStatusCode.BadRequest, "Not your task");
-            }
-
-            task.Title = taskUpdateDto.Title;
-            task.Description = taskUpdateDto.Description;
-
-            await taskRepo.Save(task);
-            return task;
+            throw new NotImplementedException();
         }
 
-        public async Task<TaskEntity> GetByPublicId(string id)
+        public Task<TaskEntity> GetByPublicId(string id)
         {
-            var task = await taskRepo.GetByPublicId(id);
-            if (task == null)
-            {
-                throw new HttpStatusException(HttpStatusCode.NotFound, "Task not found");
-            }
-            return task;
+            throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<TaskEntity>> GetAll()
+        public Task<IEnumerable<TaskEntity>> GetAll()
         {
-            return await taskRepo.GetAll();
+            throw new NotImplementedException();
         }
 
         public Task<IEnumerable<TaskEntity>> GetForCurrentUser()
@@ -116,7 +63,7 @@ namespace TaskService.Services.Income
             throw new NotImplementedException();
         }
 
-        public Task GetAvailableTasks()
+        public Task<IEnumerable<TaskEntity>> GetAvailableTasks()
         {
             throw new NotImplementedException();
         }

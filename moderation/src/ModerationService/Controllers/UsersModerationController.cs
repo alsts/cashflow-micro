@@ -1,13 +1,12 @@
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Utils;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using ModerationService.Events.Publishers.Interfaces;
 using ModerationService.Services.interfaces;
 using ModerationService.Util.AccountService.Util.Helpers;
 
@@ -21,17 +20,14 @@ namespace ModerationService.Controllers
     {
         private readonly ILogger<UsersModerationController> logger;
         private readonly IUserModerationService userModerationService;
-        private readonly IPublishEndpoint publishEndpoint;
-        private readonly IMapper mapper;
+        private readonly IMessageBusPublisher messageBusPublisher;
 
         public UsersModerationController(
             IUserModerationService userModerationService, 
-            IPublishEndpoint publishEndpoint, 
-            IMapper mapper)
+            IMessageBusPublisher messageBusPublisher)
         {
             this.userModerationService = userModerationService;
-            this.publishEndpoint = publishEndpoint;
-            this.mapper = mapper;
+            this.messageBusPublisher = messageBusPublisher;
         }
         
         [HttpGet]
@@ -42,11 +38,18 @@ namespace ModerationService.Controllers
         }
         
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPut("{userId}/ban")]
+        [HttpPost("{userId}/ban")]
         public async Task<IActionResult> BanUser(string userId)
         {
-            var task = await userModerationService.BanUser(userId);
-            return Ok(task.ToPublicDto());
+            if (!messageBusPublisher.IsEventBusHealthy())
+            {
+                return BadRequest();
+            }
+            
+            var bannedUser = await userModerationService.BanUser(userId);
+            await messageBusPublisher.PublishUserBlockedEvent(bannedUser);
+            
+            return Ok(bannedUser.ToPublicDto());
         }
     }
 }

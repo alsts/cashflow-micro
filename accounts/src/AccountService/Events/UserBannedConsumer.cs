@@ -8,7 +8,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace AccountService.Events
 {
-    public class UserBannedConsumer : IConsumer<UserBlockedEvent>
+    public class UserBannedConsumer : IConsumer<UserBannedEvent>
     {
         private readonly IMapper mapper;
         private readonly ILogger<UserBannedConsumer> logger;
@@ -27,7 +27,7 @@ namespace AccountService.Events
             this.messageBusPublisher = messageBusPublisher;
         }
 
-        public async Task Consume(ConsumeContext<UserBlockedEvent> context)
+        public async Task Consume(ConsumeContext<UserBannedEvent> context)
         {
             var userBlockedEvent = context.Message;
             if (userBlockedEvent == null)

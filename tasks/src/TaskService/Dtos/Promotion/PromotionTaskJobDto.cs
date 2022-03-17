@@ -2,7 +2,7 @@ using System;
 
 namespace TaskService.Dtos.Promotion
 {
-    public class PromotionTaskDto
+    public class PromotionTaskJobDto
     {
         public string PublicId { get; set; }
         public string Title { get; set; }

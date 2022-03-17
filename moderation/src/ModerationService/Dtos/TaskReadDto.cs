@@ -1,6 +1,6 @@
 using System;
 
-namespace TaskService.Dtos
+namespace ModerationService.Dtos
 {
     public class TaskReadDto
     {

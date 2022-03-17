@@ -1,15 +1,17 @@
-using System.ComponentModel.DataAnnotations;
+using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Data.Models;
 
 namespace TaskService.Data.Models
 {
-    public class Task : BaseEntity
+    public class TaskJob : BaseEntity
     {
-        [Required] public string Title { get; set; }
-        [Required] public string Description { get; set; }
-        [Required] public int UserId { get; set; }
-        public User User { get; set; }
-        public int TaskStatus { get; set; }
-        public bool IsActive { get; set; }
+        public decimal RewardPrice { get; set; }
+        public TaskJobStatus TaskJobStatus { get; set; }
+
+        public int TaskId { get; set; }
+        public Task Task { get; set; }
+        
+        public int? ReportId { get; set; }
+        public Report? Report { get; set; }
     }
 }

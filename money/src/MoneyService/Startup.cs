@@ -16,7 +16,10 @@ using Microsoft.OpenApi.Models;
 using MoneyService.Data;
 using MoneyService.Data.Repos;
 using MoneyService.Data.Repos.Interfaces;
-using MoneyService.Events;
+using MoneyService.Events.Consumers;
+using MoneyService.Events.Publishers;
+using MoneyService.Events.Publishers.Interfaces;
+using MoneyService.Services;
 using MoneyService.Services.interfaces;
 using MySqlConnector;
 
@@ -56,58 +59,22 @@ namespace MoneyService
                 services.AddDbContext<AppDbContext>(opt =>
                     opt.UseInMemoryDatabase("InMem"));
             }
-
-            logger.LogInformation("---> Using RabbitMQ");
-            services.AddMassTransit(x =>
-            {
-                x.AddConsumer<UserCreatedConsumer>();
-                x.AddConsumer<UserUpdatedConsumer>();
-                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
-                {
-                    cfg.AutoStart = true;
-                    cfg.UseHealthCheck(provider);
-                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
-                        hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
-                    
-                    // retry delivering messages from rabbitMQ:
-                    cfg.UseDelayedExchangeMessageScheduler();
-
-                    cfg.ReceiveEndpoint(Queue.Tasks.UserCreated, ep =>
-                    {
-                        ep.Exclusive = false;
-                        ep.AutoDelete = false;
-                        ep.Durable = true;
-                        ep.PrefetchCount = 16;
-                        ep.ConfigureConsumer<UserCreatedConsumer>(provider);
-                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
-                    });
-
-                    cfg.ReceiveEndpoint(Queue.Tasks.UserUpdated, ep =>
-                    {
-                        ep.Exclusive = false;
-                        ep.AutoDelete = false;
-                        ep.Durable = true;
-                        ep.PrefetchCount = 16;
-                        ep.ConfigureConsumer<UserUpdatedConsumer>(provider);
-                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
-                    });
-                }));
-            });
-
-            services.AddMassTransitHostedService();
-            services.AddScoped<UserCreatedConsumer>();
-            services.AddScoped<UserUpdatedConsumer>();
-
+            
+            ConfigureRabbitMq(services);
+            
             var jwtSettings = new JwtSettings();
             Config.Bind("JwtSettings", jwtSettings);
             services.AddSingleton(jwtSettings);
 
             services.AddJwtCookiesAuthentication(jwtSettings);
 
+            services.AddTransient<ITaskTransactionRepo, TaskTransactionRepo>();
+            services.AddTransient<IUserTransactionRepo, UserTransactionRepo>();
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddTransient<ITaskRepo, TaskRepo>();
             
-            services.AddScoped<IMoneyService, MoneyService.Services.MoneyService>();
+            services.AddScoped<IMoneyTasksService, MoneyTasksService>();
+            services.AddScoped<IMoneyUsersService, MoneyUsersService>();
 
             services.AddControllers();
             services.AddScoped<LoggedInUserDataHolder>();
@@ -177,6 +144,80 @@ namespace MoneyService
 
             // db seeder:
             PrepDb.Seed(app, logger, env);
+        }
+        
+        private void ConfigureRabbitMq(IServiceCollection services)
+        {
+            logger.LogInformation("---> Using RabbitMQ");
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<UserCreatedConsumer>();
+                x.AddConsumer<UserUpdatedConsumer>();
+                x.AddConsumer<TaskCreatedConsumer>();
+                x.AddConsumer<TaskUpdatedConsumer>();
+                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                {
+                    cfg.AutoStart = true;
+                    cfg.UseHealthCheck(provider);
+                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
+                        hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
+                    
+                    // retry delivering messages from rabbitMQ:
+                    cfg.UseDelayedExchangeMessageScheduler();
+                    
+                    // TODO: task job -> created/updated
+
+                    cfg.ReceiveEndpoint(Queue.Money.TaskCreated, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<TaskCreatedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+
+                    cfg.ReceiveEndpoint(Queue.Money.TaskUpdated, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<TaskUpdatedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+
+                    cfg.ReceiveEndpoint(Queue.Money.UserCreated, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<UserCreatedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+
+                    cfg.ReceiveEndpoint(Queue.Money.UserUpdated, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<UserUpdatedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+                }));
+            });
+
+            // inject services:
+            services.AddMassTransitHostedService();
+            
+            services.AddScoped<UserCreatedConsumer>();
+            services.AddScoped<UserUpdatedConsumer>();
+            services.AddScoped<TaskCreatedConsumer>();
+            services.AddScoped<TaskUpdatedConsumer>();
+            
+            services.AddScoped<IMessageBusPublisher, MessageBusPublisher>();
         }
 
         private string GetMySqlDatabaseConnectionString()

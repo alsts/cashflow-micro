@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using TaskService.Data.Models;
+using TaskService.Data.Models.External;
 using TaskService.Dtos;
+using TaskService.Dtos.Promotion;
 using TaskEntity = TaskService.Data.Models.Task;
 
 namespace TaskService.Util

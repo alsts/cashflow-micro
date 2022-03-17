@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cashflow.Common.Data.DataObjects;
+using TaskService.Controllers.Promotion;
 using TaskService.Data.Models;
 using TaskService.Data.Repos.Interfaces;
 using TaskService.Services.Promotion.interfaces;
+using Task = System.Threading.Tasks.Task;
 
 namespace TaskService.Services.Promotion
 {
@@ -18,17 +20,32 @@ namespace TaskService.Services.Promotion
             this.loggedInUserDataHolder = loggedInUserDataHolder;
         }
 
-        public Task<User> GetCurrent()
+        public Task<TaskJob> GetById(string id)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<User> GetByPublicId(string id)
+        public Task<IEnumerable<TaskJob>> GetAll()
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<User>> GetAll()
+        public Task<IEnumerable<TaskJob>> GetJobsByQuery(TasksQuery tasksQuery)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task Approve(string jobId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task Decline(string jobId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task RequestImprovement(string jobId)
         {
             throw new System.NotImplementedException();
         }

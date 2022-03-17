@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Data.Models;
 
-namespace TaskService.Data.Models
+namespace TaskService.Data.Models.External
 {
     public class User : BaseEntity
     {

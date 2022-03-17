@@ -1,15 +1,16 @@
 using AutoMapper;
 using TaskService.Data.Models;
 using TaskService.Dtos.Income;
+using TaskService.Dtos.Promotion;
 
 namespace TaskService.Mapper
 {
-    public class TaskProfile : Profile
+    public class TaskJobProfile : Profile
     {
-        public TaskProfile()
+        public TaskJobProfile()
         {
-            CreateMap<IncomeTaskDto, Task>().ReverseMap();
             CreateMap<IncomeTaskJobDto, TaskJob>().ReverseMap();
+            CreateMap<PromotionTaskJobDto, TaskJob>().ReverseMap();
         }
     }
 }

@@ -1,6 +1,6 @@
 using AutoMapper;
-using Cashflow.Common.Events.Accounts;
-using TaskService.Data.Models;
+using Cashflow.Common.Events.Moderation;
+using ModerationService.Data.Models;
 
 namespace ModerationService.Mapper
 {
@@ -8,8 +8,7 @@ namespace ModerationService.Mapper
     {
         public UserProfile()
         {
-            CreateMap<UserCreatedEvent, User>().ReverseMap();
-            CreateMap<UserUpdatedEvent, User>().ReverseMap();
+            CreateMap<UserBlockedEvent, User>().ReverseMap();
         }
     }
 }

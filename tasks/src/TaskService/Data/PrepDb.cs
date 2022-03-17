@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TaskService.Data.Models;
+using TaskService.Data.Models.External;
 
 namespace TaskService.Data
 {

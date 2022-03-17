@@ -6,6 +6,7 @@ using System.Text;
 using Cashflow.Common.Data.DataObjects;
 using Microsoft.IdentityModel.Tokens;
 using TaskService.Data.Models;
+using TaskService.Data.Models.External;
 
 namespace TaskService.Tests.Common
 {

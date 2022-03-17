@@ -33,7 +33,7 @@ namespace Cashflow.Common.Utils
             {
                 entity.Version += 1;
                 entity.LastUpdatedAt = DateTime.Now;
-                entity.CreatedByUserId = loggedInUserDataHolder?.UserID ?? "";
+                entity.LastUpdatedByUserId = loggedInUserDataHolder?.UserID ?? "";
             }
         }
     }

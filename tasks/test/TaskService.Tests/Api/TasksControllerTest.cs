@@ -6,6 +6,7 @@ using Cashflow.Common.Data.Enums;
 using FluentAssertions;
 using TaskService.Data;
 using TaskService.Dtos;
+using TaskService.Dtos.Promotion;
 using TaskService.Tests.Common;
 using TaskService.Util;
 using Xunit;

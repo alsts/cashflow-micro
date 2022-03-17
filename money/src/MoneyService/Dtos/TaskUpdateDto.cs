@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TaskService.Dtos
+namespace MoneyService.Dtos
 {
     public class TaskUpdateDto
     {

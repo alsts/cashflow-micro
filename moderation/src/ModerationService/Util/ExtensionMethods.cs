@@ -1,27 +1,14 @@
-using AccountService.Data.Models;
-using AccountService.Dtos;
-using Microsoft.AspNetCore.Http;
 
-namespace AccountService.Util
+using ModerationService.Data.Models;
+using ModerationService.Dtos;
+using TaskEntity = ModerationService.Data.Models.Task;
+
+namespace ModerationService.Util
 {
     namespace AccountService.Util.Helpers
     {
         public static class ExtensionMethods
         {
-            public static User WithoutPassword(this User user) 
-            {
-                if (user == null) return null;
-
-                user.Password = null;
-                return user;
-            }
-        
-            public static void AppendAuthCookie(this HttpResponse response, User user, string token) 
-            {
-                if (response == null) return;
-                response.Cookies.Append("X-Access-Token", token, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict });
-            }
-        
             public static UserReadDto ToPublicDto(this User user) 
             {
                 if (user == null) return null;
@@ -30,27 +17,20 @@ namespace AccountService.Util
                 {
                     Email = user.Email,
                     Username = user.UserName,
-                    Firstname = user.Firstname,
-                    Lastname = user.Lastname,
-                    Gender = (int) user.Gender,
-                    CreatedAt = user.CreatedAt,
                     Id = user.PublicId
                 };
             }
         
-            public static UserPublishedDto ToPublishedDto(this User user) 
+            public static TaskReadDto ToPublicDto(this TaskEntity task) 
             {
-                if (user == null) return null;
+                if (task == null) return null;
             
-                return new UserPublishedDto
+                return new TaskReadDto
                 {
-                    Email = user.Email,
-                    Username = user.UserName,
-                    Firstname = user.Firstname,
-                    Lastname = user.Lastname,
-                    Gender = (int) user.Gender,
-                    CreatedAt = user.CreatedAt,
-                    Id = user.PublicId
+                    Id = task.PublicId,
+                    Title = task.Title,
+                    Description = task.Description,
+                    CreatedAt = task.CreatedAt
                 };
             }
         }

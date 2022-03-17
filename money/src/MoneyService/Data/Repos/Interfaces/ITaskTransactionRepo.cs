@@ -1,13 +1,17 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MoneyService.Data.Models;
 using TaskEntity = MoneyService.Data.Models.Task;
+using Task = System.Threading.Tasks.Task;
 
 namespace MoneyService.Data.Repos.Interfaces
 {
-    public interface ITaskRepo
+    public interface ITaskTransactionRepo
     {
-        Task<TaskEntity> GetByPublicId(string publicId);
-        Task Save(TaskEntity task);
-        Task<IEnumerable<TaskEntity>> GetAll();
+        Task Save(TaskTransaction taskTransaction);
+        
+        Task<decimal> GetTaskBalance(int taskId);
+        Task<decimal> GetTaskPendingBalance(int taskId);
+        Task<List<TaskTransaction>> GetTransactionsHistory(string userId);
     }
 }

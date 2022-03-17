@@ -1,17 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using Cashflow.Common.Data.Models;
 
-namespace CashFlow.Database.Models
+namespace MoneyService.Data.Models
 {
-    public class TaskTransaction
+    public class TaskTransaction : BaseEntity
     {
-        public DateTime CreatedAt { get; set; }
-        public int CreatedByUserID { get; set; }
-        public string CreateDescription { get; set; }
-        [Key]
-        public int ID { get; set; }
-        public int TaskID { get; set; }
         public decimal Amount { get; set; }
-        public int? ToUserID { get; set; }
+        public string Description { get; set; }
+        public int TransactionStatus { get; set; }
+        public string TaskId { get; set; }
     }
 }

@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Utils;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using ModerationService.Events.Publishers.Interfaces;
 using ModerationService.Services.interfaces;
 using ModerationService.Util.AccountService.Util.Helpers;
 
@@ -21,16 +21,16 @@ namespace ModerationService.Controllers
     {
         private readonly ILogger<TasksModerationController> logger;
         private readonly ITaskModerationService tasksModerationService;
-        private readonly IPublishEndpoint publishEndpoint;
+        private readonly IMessageBusPublisher messageBusPublisher;
         private readonly IMapper mapper;
 
         public TasksModerationController(
             ITaskModerationService tasksModerationService, 
-            IPublishEndpoint publishEndpoint, 
+            IMessageBusPublisher messageBusPublisher,
             IMapper mapper)
         {
             this.tasksModerationService = tasksModerationService;
-            this.publishEndpoint = publishEndpoint;
+            this.messageBusPublisher = messageBusPublisher;
             this.mapper = mapper;
         }
         
@@ -41,11 +41,16 @@ namespace ModerationService.Controllers
             return Ok(tasks.Select(t => t.ToPublicDto()));
         }
         
-        [HttpPut("{taskId}/approve")]
+        [HttpPost("{taskId}/approve")]
         public async Task<IActionResult> ApproveTask(string taskId)
         {
+            if (!messageBusPublisher.IsEventBusHealthy())
+            {
+                return BadRequest();
+            }
+            
             var task = await tasksModerationService.ApproveTask(taskId);
-            await messageBusPublisher.PublishUpdatedUser(user);
+            await messageBusPublisher.PublishTaskApprovedEvent(task);
             
             return Ok(task.ToPublicDto());
         }

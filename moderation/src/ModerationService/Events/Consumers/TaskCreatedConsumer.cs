@@ -1,46 +1,46 @@
 using System;
 using AutoMapper;
-using Cashflow.Common.Events.Accounts;
+using Cashflow.Common.Events.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using ModerationService.Data.Models;
 using ModerationService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
+using TaskEntity = ModerationService.Data.Models.Task;
 
-namespace ModerationService.Events
+namespace ModerationService.Events.Consumers
 {
-    public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
+    public class TaskCreatedConsumer : IConsumer<TaskCreatedEvent>
     {
         private readonly IMapper mapper;
-        private readonly ILogger<UserCreatedConsumer> logger;
-        private readonly IUserRepo userRepo;
+        private readonly ILogger<TaskCreatedConsumer> logger;
+        private readonly ITaskRepo taskRepo;
         
-        public UserCreatedConsumer(IMapper mapper, ILogger<UserCreatedConsumer> logger, IUserRepo userRepo)
+        public TaskCreatedConsumer(IMapper mapper, ILogger<TaskCreatedConsumer> logger, ITaskRepo taskRepo)
         {
             this.mapper = mapper;
             this.logger = logger;
-            this.userRepo = userRepo;
+            this.taskRepo = taskRepo;
         }
 
-        public async Task Consume(ConsumeContext<UserCreatedEvent> context)
+        public async Task Consume(ConsumeContext<TaskCreatedEvent> context)
         {
-            var userFromEvent = mapper.Map<User>(context.Message);
+            var taskFromEvent = mapper.Map<TaskEntity>(context.Message);
 
-            if (userFromEvent == null)
+            if (taskFromEvent == null)
             {
-                logger.LogError($"[User Created Event] - Failed - User event is null");
+                logger.LogError($"[Task Created Event] - Failed - Task event is null");
                 return; // remove broken event from queue
             }
             
-            if (await userRepo.GetByPublicId(userFromEvent.PublicId) != null)
+            if (await taskRepo.GetByPublicId(taskFromEvent.PublicId) != null)
             {
-                var errorMessage = $"[User Created Event] - Failed - User already exists [User: {userFromEvent.PublicId}]";
+                var errorMessage = $"[Task Created Event] - Failed - Task already exists [Task: {taskFromEvent.PublicId}]";
                 logger.LogError(errorMessage);
                 throw new Exception(errorMessage);
             }
             
-            await userRepo.Save(userFromEvent);
-            logger.LogInformation($"[User Created Event] - Processed [User: {userFromEvent.PublicId}, Version: {userFromEvent.Version}]");
+            await taskRepo.Save(taskFromEvent);
+            logger.LogInformation($"[Task Created Event] - Processed [Task: {taskFromEvent.PublicId}, Version: {taskFromEvent.Version}]");
         }
     }
 }

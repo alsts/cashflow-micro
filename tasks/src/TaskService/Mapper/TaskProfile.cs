@@ -1,15 +1,16 @@
 using AutoMapper;
-using Cashflow.Common.Events.Accounts;
 using TaskService.Data.Models;
+using TaskService.Dtos.Income;
+using TaskService.Dtos.Promotion;
 
 namespace TaskService.Mapper
 {
-    public class UserProfile : Profile
+    public class TaskProfile : Profile
     {
-        public UserProfile()
+        public TaskProfile()
         {
-            CreateMap<UserCreatedEvent, User>().ReverseMap();
-            CreateMap<UserUpdatedEvent, User>().ReverseMap();
+            CreateMap<IncomeTaskDto, Task>().ReverseMap();
+            CreateMap<Task, PromotionTaskDto>().ForMember(o => o.AuthorId, b => b.MapFrom(z => z.PublicId));
         }
     }
 }
