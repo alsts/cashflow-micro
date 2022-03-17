@@ -46,7 +46,6 @@ namespace TaskService.Services.Promotion
                 Description = taskCreateDto.Description,
                 PublicId = Guid.NewGuid().ToString(),
                 CreatedAt = DateTime.Now,
-                IsActive = false,
                 UserId = user.Id
             };
             

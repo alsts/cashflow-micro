@@ -18,10 +18,8 @@ using TaskService.Data;
 using TaskService.Data.Repos;
 using TaskService.Data.Repos.Interfaces;
 using TaskService.Events;
-using TaskService.Services;
 using TaskService.Services.Income;
 using TaskService.Services.Income.interfaces;
-using TaskService.Services.interfaces;
 using TaskService.Services.Promotion;
 using TaskService.Services.Promotion.interfaces;
 

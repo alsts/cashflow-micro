@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Exceptions;
 using TaskService.Data.Models;
+using TaskService.Data.Models.External;
 using TaskService.Data.Repos.Interfaces;
 using TaskService.Services.General.interfaces;
 
