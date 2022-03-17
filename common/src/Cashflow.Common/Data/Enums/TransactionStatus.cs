@@ -1,9 +1,10 @@
 namespace Cashflow.Common.Data.Enums
 {
-    public enum TaskTransactionStatus
+    public enum TransactionStatus
     {
         Pending = 1,
         Paid = 2,
-        Declined = 3
+        Declined = 3,
+        Reserved = 4
     }
 }
