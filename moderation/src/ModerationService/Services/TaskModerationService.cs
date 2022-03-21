@@ -6,7 +6,7 @@ using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Exceptions;
 using ModerationService.Data.Repos.Interfaces;
 using ModerationService.Services.interfaces;
-using TaskEntity = ModerationService.Data.Models.Task;
+using TaskEntity = ModerationService.Data.Models.External.Task;
 using TaskStatus = Cashflow.Common.Data.Enums.TaskStatus;
 
 namespace ModerationService.Services

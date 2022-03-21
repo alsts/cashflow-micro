@@ -4,9 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Exceptions;
-using TaskService.Controllers.Promotion;
 using TaskService.Data.Repos.Interfaces;
-using TaskService.Dtos;
 using TaskService.Dtos.Promotion;
 using TaskService.Services.General.interfaces;
 using TaskService.Services.Promotion.interfaces;
@@ -113,16 +111,6 @@ namespace TaskService.Services.Promotion
         }
 
         public Task StopTask(string publicId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task GetAvailableTasks()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<TaskEntity>> GetJobsByQuery(TasksQuery tasksQuery)
         {
             throw new NotImplementedException();
         }

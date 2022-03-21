@@ -1,7 +1,7 @@
 using System;
 using Cashflow.Common.Data.Models;
 
-namespace ModerationService.Data.Models
+namespace ModerationService.Data.Models.External
 {
     public class Task : BaseEntity
     {

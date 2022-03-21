@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TaskEntity = ModerationService.Data.Models.Task;
+using TaskEntity = ModerationService.Data.Models.External.Task;
 
 namespace ModerationService.Data.Repos.Interfaces
 {

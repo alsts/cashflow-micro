@@ -135,10 +135,10 @@ namespace ModerationService
                 {
                     using var serviceScope = app.ApplicationServices.CreateScope();
                     serviceScope.ServiceProvider.GetService<AppDbContext>();
-                    logger.LogInformation("---> MySQL Database connected");
+                    logger.LogInformation("---> Database connected");
                 },
                 retryCount => logger.LogInformation("---> Retrying to connect with MySQL: " + retryCount),
-                () => logger.LogError("---> Could not connect to MySQL"));
+                () => logger.LogError("---> Could not connect to Database"));
 
             // db seeder:
             PrepDb.Seed(app, logger, env);

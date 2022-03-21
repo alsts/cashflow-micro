@@ -112,8 +112,6 @@ namespace TaskService
 
             services.AddScoped<ITaskIncomeService, TaskIncomeService>();
             services.AddScoped<ITaskPromotionService, TaskPromotionService>();
-            services.AddScoped<ITaskJobIncomeService, TaskJobIncomeService>();
-            services.AddScoped<ITaskJobPromotionService, TaskJobPromotionService>();
 
             services.AddControllers();
             services.AddScoped<LoggedInUserDataHolder>();

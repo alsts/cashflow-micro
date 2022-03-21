@@ -164,8 +164,6 @@ namespace MoneyService
                     
                     // retry delivering messages from rabbitMQ:
                     cfg.UseDelayedExchangeMessageScheduler();
-                    
-                    // TODO: task job -> created/updated
 
                     cfg.ReceiveEndpoint(Queue.Money.TaskCreated, ep =>
                     {

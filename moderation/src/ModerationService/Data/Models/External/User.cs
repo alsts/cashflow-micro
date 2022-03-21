@@ -1,7 +1,7 @@
 using System;
 using Cashflow.Common.Data.Models;
 
-namespace ModerationService.Data.Models
+namespace ModerationService.Data.Models.External
 {
     public class User : BaseEntity
     {
@@ -10,7 +10,7 @@ namespace ModerationService.Data.Models
         public int WarningsCount { get; set; }
         public string RefreshToken { get; set; }
         public int RoleId { get; set; }
-        public DateTime UserBlockedAt { get; set; } 
+        public DateTime UserBannedAt { get; set; } 
         public bool IsBanned { get; set; } = false;
     }
 }

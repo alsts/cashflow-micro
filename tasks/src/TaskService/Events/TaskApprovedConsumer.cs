@@ -1,30 +1,32 @@
 using System;
 using AutoMapper;
 using Cashflow.Common.Events.Accounts;
+using Cashflow.Common.Events.Moderation;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using ModerationService.Data.Models;
-using ModerationService.Data.Models.External;
-using ModerationService.Data.Repos.Interfaces;
+using TaskService.Data.Models;
+using TaskService.Data.Models.External;
+using TaskService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
 
-namespace ModerationService.Events.Consumers
+namespace TaskService.Events
 {
-    public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
+    public class TaskApprovedConsumer : IConsumer<TaskApprovedEvent>
     {
         private readonly IMapper mapper;
-        private readonly ILogger<UserCreatedConsumer> logger;
+        private readonly ILogger<TaskApprovedEvent> logger;
         private readonly IUserRepo userRepo;
         
-        public UserCreatedConsumer(IMapper mapper, ILogger<UserCreatedConsumer> logger, IUserRepo userRepo)
+        public TaskApprovedConsumer(IMapper mapper, ILogger<TaskApprovedEvent> logger, IUserRepo userRepo)
         {
             this.mapper = mapper;
             this.logger = logger;
             this.userRepo = userRepo;
         }
 
-        public async Task Consume(ConsumeContext<UserCreatedEvent> context)
+        public async Task Consume(ConsumeContext<TaskApprovedEvent> context)
         {
+            // TODO: update!!!
             var userFromEvent = mapper.Map<User>(context.Message);
 
             if (userFromEvent == null)

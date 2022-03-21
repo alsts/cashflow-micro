@@ -4,6 +4,7 @@ using Cashflow.Common.Events.Accounts;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using ModerationService.Data.Models;
+using ModerationService.Data.Models.External;
 using ModerationService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
 

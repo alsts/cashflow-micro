@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ModerationService.Data.Repos.Interfaces;
-using TaskEntity = ModerationService.Data.Models.Task;
+using TaskEntity = ModerationService.Data.Models.External.Task;
 using TaskStatus = Cashflow.Common.Data.Enums.TaskStatus;
 
 namespace ModerationService.Data.Repos

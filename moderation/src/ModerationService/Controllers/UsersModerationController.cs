@@ -1,11 +1,13 @@
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using ModerationService.Dtos;
 using ModerationService.Events.Publishers.Interfaces;
 using ModerationService.Services.interfaces;
 using ModerationService.Util.AccountService.Util.Helpers;
@@ -21,13 +23,16 @@ namespace ModerationService.Controllers
         private readonly ILogger<UsersModerationController> logger;
         private readonly IUserModerationService userModerationService;
         private readonly IMessageBusPublisher messageBusPublisher;
+        private readonly IMapper mapper;
 
         public UsersModerationController(
             IUserModerationService userModerationService, 
-            IMessageBusPublisher messageBusPublisher)
+            IMessageBusPublisher messageBusPublisher,
+            IMapper mapper)
         {
             this.userModerationService = userModerationService;
             this.messageBusPublisher = messageBusPublisher;
+            this.mapper = mapper;
         }
         
         [HttpGet]
@@ -47,9 +52,9 @@ namespace ModerationService.Controllers
             }
             
             var bannedUser = await userModerationService.BanUser(userId);
-            await messageBusPublisher.PublishUserBlockedEvent(bannedUser);
+            await messageBusPublisher.PublishUserBannedEvent(bannedUser);
             
-            return Ok(bannedUser.ToPublicDto());
+            return Ok(mapper.Map<UserBanDto>(bannedUser));
         }
     }
 }

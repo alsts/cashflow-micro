@@ -21,7 +21,6 @@ namespace MoneyService.Data
         public DbSet<TaskEntity> Tasks { get; set; }
         public DbSet<UserTransaction> UserTransactions { get; set; }
         public DbSet<TaskTransaction> TaskTransactions { get; set; }
-        public DbSet<TaskJobTransaction> TaskJobTransactions { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

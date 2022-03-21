@@ -1,7 +1,8 @@
 
 using ModerationService.Data.Models;
+using ModerationService.Data.Models.External;
 using ModerationService.Dtos;
-using TaskEntity = ModerationService.Data.Models.Task;
+using TaskEntity = ModerationService.Data.Models.External.Task;
 
 namespace ModerationService.Util
 {

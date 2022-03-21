@@ -1,8 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TaskService.Controllers;
-using TaskService.Controllers.Promotion;
-using TaskService.Dtos;
 using TaskService.Dtos.Promotion;
 using TaskEntity = TaskService.Data.Models.Task;
 
@@ -17,7 +14,5 @@ namespace TaskService.Services.Promotion.interfaces
         Task<IEnumerable<TaskEntity>> GetForCurrentUser();
         Task StartTask(string publicId);
         Task StopTask(string publicId);
-        Task GetAvailableTasks();
-        Task<IEnumerable<TaskEntity>> GetJobsByQuery(TasksQuery tasksQuery);
     }
 }

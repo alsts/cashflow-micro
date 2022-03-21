@@ -29,14 +29,14 @@ namespace AccountService.Events
 
         public async Task Consume(ConsumeContext<UserBannedEvent> context)
         {
-            var userBlockedEvent = context.Message;
-            if (userBlockedEvent == null)
+            var userBannedEvent = context.Message;
+            if (userBannedEvent == null)
             {
                 logger.LogError($"[User Banned Event] - Failed - User event is null");
                 return; // remove broken event from queue
             }
 
-            var user = await userRepo.GetByPublicId(userBlockedEvent.UserId);
+            var user = await userRepo.GetByPublicId(userBannedEvent.UserId);
             if (user == null)
             {
                 var errorMessage = $"[User Banned Event] - Failed - User does not exist";
@@ -46,7 +46,7 @@ namespace AccountService.Events
 
             user.IsBanned = true;
             await userRepo.Save(user);
-            logger.LogInformation($"[User Banned Event] - Processed [User: {user.PublicId}, Version: {user.Version}]");
+            logger.LogInformation($"[User Banned Event] - Processed [User: {user.PublicId}]");
 
             // publish user updated event:
             await messageBusPublisher.PublishUpdatedUser(user);

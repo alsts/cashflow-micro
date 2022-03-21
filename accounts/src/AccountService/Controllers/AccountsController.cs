@@ -5,6 +5,7 @@ using AccountService.Events;
 using AccountService.Services.interfaces;
 using AccountService.Util.AccountService.Util.Helpers;
 using AccountService.Util.Jwt;
+using AutoMapper;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,15 +23,18 @@ namespace AccountService.Controllers
         private readonly JwtTokenCreator jwtCreator;
         private readonly IUserService userService;
         private readonly MessageBusPublisher messageBusPublisher;
+        private readonly IMapper mapper;
 
         public AccountController(
             JwtTokenCreator jwtCreator,
             IUserService userService, 
-            MessageBusPublisher messageBusPublisher)
+            MessageBusPublisher messageBusPublisher,
+            IMapper mapper)
         {
             this.jwtCreator = jwtCreator;
             this.userService = userService;
             this.messageBusPublisher = messageBusPublisher;
+            this.mapper = mapper;
         }
 
         [HttpPost("signin")]

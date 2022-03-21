@@ -102,6 +102,11 @@ namespace AccountService.Services
                 throw new HttpStatusException(HttpStatusCode.NotFound, "User with this username and password not found");
             }
 
+            if (user.IsBanned)
+            {
+                throw new HttpStatusException(HttpStatusCode.Forbidden, "User is banned");
+            }
+
             await UpdateRefreshTokenForUser(user);
             return user.WithoutPassword();
         }

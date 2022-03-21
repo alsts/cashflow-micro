@@ -4,7 +4,8 @@ using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Utils;
 using Microsoft.EntityFrameworkCore;
 using ModerationService.Data.Models;
-using TaskEntity = ModerationService.Data.Models.Task;
+using ModerationService.Data.Models.External;
+using TaskEntity = ModerationService.Data.Models.External.Task;
 
 namespace ModerationService.Data
 {
@@ -18,6 +19,8 @@ namespace ModerationService.Data
         }
 
         public DbSet<User> Users { get; set; }
+        
+        public DbSet<UserBan> UserBans { get; set; }
         public DbSet<TaskEntity> Tasks { get; set; }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())

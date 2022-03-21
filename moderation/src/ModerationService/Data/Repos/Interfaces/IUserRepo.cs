@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ModerationService.Data.Models;
+using ModerationService.Data.Models.External;
 using Task = System.Threading.Tasks.Task;
 
 namespace ModerationService.Data.Repos.Interfaces
@@ -11,6 +12,7 @@ namespace ModerationService.Data.Repos.Interfaces
         Task<User> GetUserByPublicIdAndRefreshToken(string publicId, string refreshToken);
         Task<IEnumerable<User>> GetAll();
         Task Save(User user);
+        Task Ban(UserBan userBan);
         Task<IEnumerable<User>> GetUsersToModerate();
     }
 }

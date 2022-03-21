@@ -40,14 +40,7 @@ namespace MoneyService.Events.Publishers
             logger.LogInformation($"[Task Transaction Created Event] - Published [Task Transaction: {eventMessage.PublicId}, Version: {eventMessage.Version}]");
             await publishEndpoint.Publish(eventMessage);
         }
-        
-        public async Task PublishCreatedTaskJobTransaction(TaskJobTransaction taskJobTransaction)
-        {
-            var eventMessage = mapper.Map<TaskJobTransactionCreatedEvent>(taskJobTransaction);
-            logger.LogInformation($"[TaskJob Transaction Created Event] - Published [TaskJob Transaction: {eventMessage.PublicId}, Version: {eventMessage.Version}]");
-            await publishEndpoint.Publish(eventMessage);
-        }
-        
+
         public async Task PublishCreatedUserTransaction(UserTransaction userTransaction)
         {
             var eventMessage = mapper.Map<UserTransactionCreatedEvent>(userTransaction);

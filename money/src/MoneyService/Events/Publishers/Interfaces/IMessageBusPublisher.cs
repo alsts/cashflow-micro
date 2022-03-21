@@ -7,7 +7,6 @@ namespace MoneyService.Events.Publishers.Interfaces
     {
         bool IsEventBusHealthy();
         Task PublishCreatedTaskTransaction(TaskTransaction taskTransaction);
-        Task PublishCreatedTaskJobTransaction(TaskJobTransaction taskJobTransaction);
         Task PublishCreatedUserTransaction(UserTransaction userTransaction);
     }
 }

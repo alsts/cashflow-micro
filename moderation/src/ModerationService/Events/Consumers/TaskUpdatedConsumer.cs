@@ -5,7 +5,7 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using ModerationService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
-using TaskEntity = ModerationService.Data.Models.Task;
+using TaskEntity = ModerationService.Data.Models.External.Task;
 
 namespace ModerationService.Events.Consumers
 {
