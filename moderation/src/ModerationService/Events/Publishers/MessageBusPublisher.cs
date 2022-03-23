@@ -37,7 +37,7 @@ namespace ModerationService.Events.Publishers
             return endpointHealthResult.Status == BusHealthStatus.Healthy;
         }
         
-        public async Task PublishUserBannedEvent(UserBan userBan)
+        public async Task PublishUserBannedEvent(User userBan)
         {
             var userBannedEvent = mapper.Map<UserBannedEvent>(userBan);
             logger.LogInformation($"[User Banned Event] - Published [User: {userBannedEvent.UserId}]");

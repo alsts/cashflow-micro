@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MoneyService.Data.Models;
+using MoneyService.Data.Models.External;
 using MoneyService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
 

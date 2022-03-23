@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MoneyService.Data.Models;
-using TaskEntity = MoneyService.Data.Models.Task;
+using TaskEntity = MoneyService.Data.Models.External.Task;
 using Task = System.Threading.Tasks.Task;
 
 namespace MoneyService.Data.Repos.Interfaces

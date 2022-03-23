@@ -19,9 +19,19 @@ namespace ModerationService.Data
         }
 
         public DbSet<User> Users { get; set; }
-        
-        public DbSet<UserBan> UserBans { get; set; }
         public DbSet<TaskEntity> Tasks { get; set; }
+        
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // enum conversion:
+            modelBuilder.Entity<TaskEntity>()
+                .Property(c => c.TaskStatus)
+                .HasConversion<int>();
+            
+            modelBuilder.Entity<User>()
+                .Property(c => c.Gender)
+                .HasConversion<int>();
+        }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {

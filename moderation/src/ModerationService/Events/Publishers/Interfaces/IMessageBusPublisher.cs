@@ -8,7 +8,7 @@ namespace ModerationService.Events.Publishers.Interfaces
     public interface IMessageBusPublisher
     {
         bool IsEventBusHealthy();
-        Task PublishUserBannedEvent(UserBan userBan);
+        Task PublishUserBannedEvent(User userBan);
         Task PublishTaskApprovedEvent(TaskEntity task);
     }
 }

@@ -9,6 +9,7 @@ using TaskService.Dtos.Promotion;
 using TaskService.Services.General.interfaces;
 using TaskService.Services.Promotion.interfaces;
 using TaskEntity = TaskService.Data.Models.Task;
+using TaskStatus = Cashflow.Common.Data.Enums.TaskStatus;
 
 namespace TaskService.Services.Promotion
 {
@@ -43,6 +44,7 @@ namespace TaskService.Services.Promotion
                 Title = taskCreateDto.Title,
                 Description = taskCreateDto.Description,
                 PublicId = Guid.NewGuid().ToString(),
+                TaskStatus = TaskStatus.PendingApproval,
                 CreatedAt = DateTime.Now,
                 UserId = user.Id
             };
@@ -100,9 +102,10 @@ namespace TaskService.Services.Promotion
             return await taskRepo.GetAll();
         }
 
-        public Task<IEnumerable<TaskEntity>> GetForCurrentUser()
+        public async Task<IEnumerable<TaskEntity>> GetForCurrentUser()
         {
-            throw new NotImplementedException();
+            var user = await userService.GetCurrent();
+            return await taskRepo.GetByUserId(user.Id);
         }
 
         public Task StartTask(string publicId)

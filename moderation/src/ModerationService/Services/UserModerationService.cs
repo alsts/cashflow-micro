@@ -4,7 +4,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Exceptions;
-using ModerationService.Data.Models;
 using ModerationService.Data.Models.External;
 using ModerationService.Data.Repos.Interfaces;
 using ModerationService.Services.interfaces;
@@ -33,7 +32,7 @@ namespace ModerationService.Services
             return await userRepo.GetUsersToModerate();
         }
 
-        public async Task<UserBan> BanUser(string userId)
+        public async Task<User> BanUser(string userId)
         {
             var user = await userRepo.GetByPublicId(userId);
             if (user == null)
@@ -41,14 +40,11 @@ namespace ModerationService.Services
                 throw new HttpStatusException(HttpStatusCode.NotFound, "User not found");
             }
             
-            UserBan userBan = new UserBan()
-            {
-                UserBannedAt = DateTime.Now,
-                UserId = user.PublicId
-            };
-            await userRepo.Ban(userBan);
+            user.BannedAt = DateTime.Now;
+            user.IsActive = false;
+            await userRepo.Save(user);
             
-            return userBan;
+            return user;
         }
     }
 }

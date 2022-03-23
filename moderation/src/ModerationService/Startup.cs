@@ -16,7 +16,6 @@ using Microsoft.OpenApi.Models;
 using ModerationService.Data;
 using ModerationService.Data.Repos;
 using ModerationService.Data.Repos.Interfaces;
-using ModerationService.Events;
 using ModerationService.Events.Consumers;
 using ModerationService.Events.Publishers;
 using ModerationService.Events.Publishers.Interfaces;
@@ -65,7 +64,6 @@ namespace ModerationService
             var jwtSettings = new JwtSettings();
             Config.Bind("JwtSettings", jwtSettings);
             services.AddSingleton(jwtSettings);
-
             services.AddJwtCookiesAuthentication(jwtSettings);
 
             services.AddTransient<IUserRepo, UserRepo>();

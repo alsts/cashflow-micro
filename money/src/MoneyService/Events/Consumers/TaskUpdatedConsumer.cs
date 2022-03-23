@@ -5,7 +5,7 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using MoneyService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
-using TaskEntity = MoneyService.Data.Models.Task;
+using TaskEntity = MoneyService.Data.Models.External.Task;
 
 namespace MoneyService.Events.Consumers
 {
@@ -51,11 +51,15 @@ namespace MoneyService.Events.Consumers
             // update existing task:
             existingTask.PublicId = taskFromEvent.PublicId;
             existingTask.Title = taskFromEvent.Title;
+            existingTask.TaskStatus = taskFromEvent.TaskStatus;
+            existingTask.RewardPrice = taskFromEvent.RewardPrice;
+            existingTask.CreatedAt = taskFromEvent.CreatedAt;
             existingTask.CreatedByUserId = taskFromEvent.CreatedByUserId;
-            existingTask.Description = taskFromEvent.Description;
-            existingTask.UserId = taskFromEvent.UserId;
-            existingTask.IsActive = taskFromEvent.IsActive;
-
+            existingTask.LastUpdatedAt = taskFromEvent.LastUpdatedAt;
+            existingTask.LastUpdatedByUserId = taskFromEvent.LastUpdatedByUserId;
+            existingTask.Version = taskFromEvent.Version;
+            
+            await taskRepo.Save(existingTask);
             logger.LogInformation($"[Task Updated Event] - Processed - [Task: {taskFromEvent.PublicId}, Version: {taskFromEvent.Version}]");
         }
     }

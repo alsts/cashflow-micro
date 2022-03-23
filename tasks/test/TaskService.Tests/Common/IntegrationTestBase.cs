@@ -94,7 +94,6 @@ namespace TaskService.Tests.Common
                 Lastname = username,
                 PublicId = Guid.NewGuid().ToString(),
                 RefreshToken = Guid.NewGuid().ToString(),
-                Gender = Genders.Male,
                 RoleId = (int)role
             };
         }

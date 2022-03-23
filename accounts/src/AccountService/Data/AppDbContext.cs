@@ -21,6 +21,14 @@ namespace AccountService.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // enum conversion:
+            modelBuilder.Entity<User>()
+                .Property(c => c.Gender)
+                .HasConversion<int>();
+        }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -48,7 +56,7 @@ namespace AccountService.Data
             {
                 entity.Version += 1;
                 entity.LastUpdatedAt = DateTime.Now;
-                entity.LastUpdatedByUserId = loggedInUserDataHolder?.UserID ?? "";
+                entity.LastUpdatedByUserId = loggedInUserDataHolder?.UserId ?? "";
             }
         }
     }

@@ -4,7 +4,8 @@ using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Utils;
 using Microsoft.EntityFrameworkCore;
 using MoneyService.Data.Models;
-using TaskEntity = MoneyService.Data.Models.Task;
+using MoneyService.Data.Models.External;
+using TaskEntity = MoneyService.Data.Models.External.Task;
 
 namespace MoneyService.Data
 {
@@ -24,7 +25,14 @@ namespace MoneyService.Data
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // enum conversion:
+            modelBuilder.Entity<TaskEntity>()
+                .Property(c => c.TaskStatus)
+                .HasConversion<int>();
             
+            modelBuilder.Entity<User>()
+                .Property(c => c.Gender)
+                .HasConversion<int>();
         }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())

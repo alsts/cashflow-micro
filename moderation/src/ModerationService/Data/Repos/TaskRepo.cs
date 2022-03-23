@@ -48,7 +48,9 @@ namespace ModerationService.Data.Repos
 
         public async Task<IEnumerable<TaskEntity>> GetTasksPendingApproval()
         {
-            return await context.Tasks.Where(x => x.TaskStatus == (int)TaskStatus.PendingApproval).ToListAsync();
+            return await context.Tasks
+                .Where(x => x.TaskStatus == TaskStatus.PendingApproval)
+                .ToListAsync();
         }
 
         private async Task<bool> SaveChanges()

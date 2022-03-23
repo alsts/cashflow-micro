@@ -1,6 +1,7 @@
 using AutoMapper;
 using Cashflow.Common.Events.Moderation;
-using Task = System.Threading.Tasks.Task;
+using Cashflow.Common.Events.Tasks;
+using Task = ModerationService.Data.Models.External.Task;
 
 namespace ModerationService.Mapper
 {
@@ -8,7 +9,12 @@ namespace ModerationService.Mapper
     {
         public TaskProfile()
         {
-            CreateMap<TaskApprovedEvent, Task>().ReverseMap();
+            CreateMap<TaskCreatedEvent, Task>().ReverseMap();
+            CreateMap<TaskUpdatedEvent, Task>().ReverseMap();
+            
+            CreateMap<Task, TaskApprovedEvent>()
+                .ForMember(o => o.TaskId, b => b.MapFrom(z => z.PublicId))
+                .ForMember(o => o.ApprovedAt, b => b.MapFrom(z => z.LastUpdatedAt));
         }
     }
 }

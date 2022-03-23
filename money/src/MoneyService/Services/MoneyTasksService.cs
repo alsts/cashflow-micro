@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Exceptions;
 using MoneyService.Data.Models;
+using MoneyService.Data.Models.External;
 using MoneyService.Data.Repos.Interfaces;
 using MoneyService.Services.interfaces;
+using Task = MoneyService.Data.Models.External.Task;
 
 namespace MoneyService.Services
 {
@@ -119,7 +121,7 @@ namespace MoneyService.Services
             return await taskTransactionRepo.GetTransactionsHistory(currentUser.PublicId);
         }
 
-        private async Task<Data.Models.Task> GetTaskForUser(string taskId, User user)
+        private async Task<Task> GetTaskForUser(string taskId, User user)
         {
             var task = await taskRepo.GetByPublicId(taskId);
             if (task == null)
@@ -127,7 +129,7 @@ namespace MoneyService.Services
                 throw new HttpStatusException(HttpStatusCode.NotFound, "Task does not exist");
             }
 
-            if (task.UserId != user.PublicId)
+            if (task.CreatedByUserId != user.PublicId)
             {
                 throw new HttpStatusException(HttpStatusCode.Forbidden, "Not your task");
             }

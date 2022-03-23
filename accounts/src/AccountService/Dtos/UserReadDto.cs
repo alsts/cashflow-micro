@@ -11,5 +11,8 @@ namespace AccountService.Dtos
         public string Firstname { get; set; }
         public string Lastname { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime LastUpdatedAt { get; set; }
+        public bool IsBanned { get; set; }
+        public int Version { get; set; }
     }
 }

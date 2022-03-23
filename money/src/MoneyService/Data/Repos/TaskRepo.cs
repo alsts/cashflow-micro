@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MoneyService.Data.Repos.Interfaces;
-using TaskEntity = MoneyService.Data.Models.Task;
+using TaskEntity = MoneyService.Data.Models.External.Task;
 
 namespace MoneyService.Data.Repos
 {

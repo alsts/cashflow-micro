@@ -10,7 +10,7 @@
     <PackageReference Include="AspNetCore.HealthChecks.MySql" Version="6.0.1" />
     <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="6.0.1" />
     <PackageReference Include="AutoFixture" Version="4.17.0" />
-    <PackageReference Include="Cashflow.Common" Version="1.0.26" />
+    <PackageReference Include="Cashflow.Common" Version="1.0.31" />
     <PackageReference Include="FluentAssertions" Version="6.3.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.5" />

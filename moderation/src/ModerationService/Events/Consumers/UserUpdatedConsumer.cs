@@ -44,20 +44,28 @@ namespace ModerationService.Events.Consumers
             if ((userFromEvent.Version - 1) != existingUser.Version)
             {
                 // schedule redelivery (user updates can get out of order)
-                var errorMessage = $"[User Updated Event] - Failed - Version Mismatch [User: {userFromEvent.PublicId}, Version: {userFromEvent.Version}]";
+                var errorMessage = $"[User Updated Event] - Failed - Version Mismatch [User: {userFromEvent.PublicId}, Version: {existingUser.Version}, {userFromEvent.Version}]";
                 logger.LogError(errorMessage);
                 throw new Exception(errorMessage);
             }
 
             // update existing user:
             existingUser.Email = userFromEvent.Email;
+            existingUser.Firstname = userFromEvent.Firstname;
+            existingUser.Lastname = userFromEvent.Lastname;
             existingUser.UserName = userFromEvent.UserName;
             existingUser.PublicId = userFromEvent.PublicId;
             existingUser.RefreshToken = userFromEvent.RefreshToken;
             existingUser.RoleId = userFromEvent.RoleId;
-            existingUser.IsBanned = userFromEvent.IsBanned;
-            await userRepo.Save(existingUser);
+            existingUser.BannedAt = userFromEvent.BannedAt;
+            existingUser.WarningsCount = userFromEvent.WarningsCount;
+            existingUser.CreatedAt = userFromEvent.CreatedAt;
+            existingUser.CreatedByUserId = userFromEvent.CreatedByUserId;
+            existingUser.LastUpdatedAt = userFromEvent.LastUpdatedAt;
+            existingUser.LastUpdatedByUserId = userFromEvent.LastUpdatedByUserId;
+            existingUser.Version = userFromEvent.Version;
             
+            await userRepo.Save(existingUser);
             logger.LogInformation($"[User Updated Event] - Processed - [User: {userFromEvent.PublicId}, Version: {userFromEvent.Version}]");
         }
     }

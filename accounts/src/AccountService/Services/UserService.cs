@@ -102,7 +102,7 @@ namespace AccountService.Services
                 throw new HttpStatusException(HttpStatusCode.NotFound, "User with this username and password not found");
             }
 
-            if (user.IsBanned)
+            if (user.BannedAt != null)
             {
                 throw new HttpStatusException(HttpStatusCode.Forbidden, "User is banned");
             }
@@ -113,12 +113,12 @@ namespace AccountService.Services
 
         public async Task<User> GetCurrent()
         {
-            if (String.IsNullOrEmpty(loggedInUserDataHolder.UserID) && String.IsNullOrEmpty(loggedInUserDataHolder.RefreshToken))
+            if (String.IsNullOrEmpty(loggedInUserDataHolder.UserId) && String.IsNullOrEmpty(loggedInUserDataHolder.RefreshToken))
             {
                 throw new HttpStatusException(HttpStatusCode.Unauthorized, "Invalid user");
             }
 
-            var user = await userRepo.GetUserByPublicIdAndRefreshToken(loggedInUserDataHolder.UserID, loggedInUserDataHolder.RefreshToken);
+            var user = await userRepo.GetUserByPublicIdAndRefreshToken(loggedInUserDataHolder.UserId, loggedInUserDataHolder.RefreshToken);
             if (user == null)
             {
                 throw new HttpStatusException(HttpStatusCode.Unauthorized, "User not found");

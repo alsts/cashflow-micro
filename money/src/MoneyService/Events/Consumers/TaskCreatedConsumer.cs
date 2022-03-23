@@ -5,7 +5,7 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using MoneyService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
-using TaskEntity = MoneyService.Data.Models.Task;
+using TaskEntity = MoneyService.Data.Models.External.Task;
 
 namespace MoneyService.Events.Consumers
 {

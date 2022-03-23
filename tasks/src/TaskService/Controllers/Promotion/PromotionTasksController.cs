@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TaskService.Dtos.Promotion;
+using TaskService.Events.Publishers.Interfaces;
 using TaskService.Services.Promotion.interfaces;
 
 namespace TaskService.Controllers.Promotion
@@ -17,13 +18,16 @@ namespace TaskService.Controllers.Promotion
     {
         private readonly ILogger<PromotionTasksController> logger;
         private readonly ITaskPromotionService taskPromotionService;
+        private readonly IMessageBusPublisher messageBusPublisher;
         private readonly IMapper mapper;
 
         public PromotionTasksController(
             ITaskPromotionService taskPromotionService, 
+            IMessageBusPublisher messageBusPublisher,
             IMapper mapper)
         {
             this.taskPromotionService = taskPromotionService;
+            this.messageBusPublisher = messageBusPublisher;
             this.mapper = mapper;
         }
         
@@ -44,14 +48,28 @@ namespace TaskService.Controllers.Promotion
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] TaskCreateDto model)
         {
+            if (!messageBusPublisher.IsEventBusHealthy())
+            {
+                return BadRequest();
+            }
+            
             var task = await taskPromotionService.Create(model);
+            await messageBusPublisher.PublishCreatedTask(task);
+            
             return Ok(mapper.Map<PromotionTaskDto>(task));
         }
         
         [HttpPut("{publicId}")]
         public async Task<IActionResult> Update([FromBody] TaskUpdateDto model, string publicId)
         {
+            if (!messageBusPublisher.IsEventBusHealthy())
+            {
+                return BadRequest();
+            }
+            
             var task = await taskPromotionService.Update(model, publicId);
+            await messageBusPublisher.PublishUpdatedTask(task);
+
             return Ok(mapper.Map<PromotionTaskDto>(task));
         }
         
@@ -67,13 +85,6 @@ namespace TaskService.Controllers.Promotion
         {
             await taskPromotionService.StopTask(publicId);
             return Ok();
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var tasks = await taskPromotionService.GetAll();
-            return Ok(tasks.Select(task => mapper.Map<PromotionTaskDto>(task)));
         }
     }
 }

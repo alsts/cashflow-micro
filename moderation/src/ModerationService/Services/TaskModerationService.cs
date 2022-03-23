@@ -40,8 +40,8 @@ namespace ModerationService.Services
                 throw new HttpStatusException(HttpStatusCode.NotFound, "Task not found");
             }
 
-            task.TaskStatus = (int)TaskStatus.PendingApproval;
-            task.ApprovedAt = DateTime.Now;
+            task.TaskStatus = TaskStatus.Stopped;
+            task.LastUpdatedAt = DateTime.Now;
             await taskRepo.Save(task);
 
             return task;

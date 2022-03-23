@@ -1,16 +1,15 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using AccountService.Data.Models;
 using AutoMapper;
-using Cashflow.Common.Events;
-using Cashflow.Common.Events.Accounts;
+using Cashflow.Common.Events.Tasks;
 using MassTransit;
 using MassTransit.Monitoring.Health;
 using Microsoft.Extensions.Logging;
+using TaskService.Events.Publishers.Interfaces;
+using TaskEntity = TaskService.Data.Models.Task;
 
-namespace AccountService.Events
+namespace TaskService.Events.Publishers
 {
-    public class MessageBusPublisher
+    public class MessageBusPublisher : IMessageBusPublisher
     {
         private readonly ILogger<MessageBusPublisher> logger;
         private readonly IMapper mapper;
@@ -34,18 +33,18 @@ namespace AccountService.Events
             var endpointHealthResult = busHealth.CheckHealth();
             return endpointHealthResult.Status == BusHealthStatus.Healthy;
         }
-        
-        public async Task PublishCreatedUser(User user)
+
+        public async Task PublishCreatedTask(TaskEntity task)
         {
-            var eventMessage = mapper.Map<UserCreatedEvent>(user);
-            logger.LogInformation($"[User Created Event] - Published [User: {eventMessage.PublicId}, Version: {eventMessage.Version}]");
+            var eventMessage = mapper.Map<TaskCreatedEvent>(task);
+            logger.LogInformation($"[Task Created Event] - Published [Task: {eventMessage.PublicId}, Version: {eventMessage.Version}]");
             await publishEndpoint.Publish(eventMessage);
         }
 
-        public async Task PublishUpdatedUser(User user)
+        public async Task PublishUpdatedTask(TaskEntity task)
         {
-            var eventMessage = mapper.Map<UserUpdatedEvent>(user);
-            logger.LogInformation($"[User Updated Event] - Published [User: {eventMessage.PublicId}, Version: {eventMessage.Version}]");
+            var eventMessage = mapper.Map<TaskUpdatedEvent>(task);
+            logger.LogInformation($"[Task Updated Event] - Published [Task: {eventMessage.PublicId}, Version: {eventMessage.Version}]");
             await publishEndpoint.Publish(eventMessage);
         }
     }

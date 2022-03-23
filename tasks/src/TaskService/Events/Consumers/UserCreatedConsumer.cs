@@ -3,12 +3,11 @@ using AutoMapper;
 using Cashflow.Common.Events.Accounts;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using TaskService.Data.Models;
 using TaskService.Data.Models.External;
 using TaskService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
 
-namespace TaskService.Events
+namespace TaskService.Events.Consumers
 {
     public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
     {

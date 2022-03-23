@@ -4,9 +4,9 @@ using MoneyService.Dtos;
 
 namespace MoneyService.Mapper
 {
-    public class TaskProfile : Profile
+    public class TransactionProfile : Profile
     {
-        public TaskProfile()
+        public TransactionProfile()
         {
             CreateMap<UserTransactionReadDto, UserTransaction>().ReverseMap();
             CreateMap<TaskTransactionReadDto, TaskTransaction>().ReverseMap();

@@ -4,7 +4,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Exceptions;
-using TaskService.Data.Models;
 using TaskService.Data.Models.External;
 using TaskService.Data.Repos.Interfaces;
 using TaskService.Services.General.interfaces;
@@ -24,16 +23,22 @@ namespace TaskService.Services.General
 
         public async Task<User> GetCurrent()
         {
-            if (String.IsNullOrEmpty(loggedInUserDataHolder.UserID) && String.IsNullOrEmpty(loggedInUserDataHolder.RefreshToken))
+            if (String.IsNullOrEmpty(loggedInUserDataHolder.UserId) && String.IsNullOrEmpty(loggedInUserDataHolder.RefreshToken))
             {
                 throw new HttpStatusException(HttpStatusCode.Unauthorized, "Invalid user");
             }
 
-            var user = await userRepo.GetUserByPublicIdAndRefreshToken(loggedInUserDataHolder.UserID, loggedInUserDataHolder.RefreshToken);
+            var user = await userRepo.GetByPublicId(loggedInUserDataHolder.UserId);
             if (user == null)
             {
                 throw new HttpStatusException(HttpStatusCode.BadRequest, "User not found");
             }
+
+            if (user.BannedAt != null)
+            {
+                throw new HttpStatusException(HttpStatusCode.Forbidden, "User is banned");
+            }
+            
             return user;
         }
         

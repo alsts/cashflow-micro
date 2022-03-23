@@ -27,6 +27,10 @@ namespace TaskService.Data
             modelBuilder.Entity<TaskEntity>()
                 .Property(c => c.TaskStatus)
                 .HasConversion<int>();
+            
+            modelBuilder.Entity<User>()
+                .Property(c => c.Gender)
+                .HasConversion<int>();
         }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())

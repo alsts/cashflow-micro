@@ -73,6 +73,7 @@ namespace MoneyService
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddTransient<ITaskRepo, TaskRepo>();
             
+            services.AddScoped<IUsersService, UsersService>();
             services.AddScoped<IMoneyTasksService, MoneyTasksService>();
             services.AddScoped<IMoneyUsersService, MoneyUsersService>();
 

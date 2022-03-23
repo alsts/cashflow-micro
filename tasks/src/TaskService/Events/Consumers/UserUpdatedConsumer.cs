@@ -3,12 +3,11 @@ using AutoMapper;
 using Cashflow.Common.Events.Accounts;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using TaskService.Data.Models;
 using TaskService.Data.Models.External;
 using TaskService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
 
-namespace TaskService.Events
+namespace TaskService.Events.Consumers
 {
     public class UserUpdatedConsumer : IConsumer<UserUpdatedEvent>
     {
@@ -51,16 +50,21 @@ namespace TaskService.Events
 
             // update existing user:
             existingUser.Email = userFromEvent.Email;
-            existingUser.UserName = userFromEvent.UserName;
-            existingUser.PublicId = userFromEvent.PublicId;
             existingUser.Firstname = userFromEvent.Firstname;
             existingUser.Lastname = userFromEvent.Lastname;
+            existingUser.UserName = userFromEvent.UserName;
+            existingUser.PublicId = userFromEvent.PublicId;
             existingUser.RefreshToken = userFromEvent.RefreshToken;
-            existingUser.Gender = userFromEvent.Gender;
             existingUser.RoleId = userFromEvent.RoleId;
-            existingUser.IsBanned = userFromEvent.IsBanned;
+            existingUser.BannedAt = userFromEvent.BannedAt;
+            existingUser.WarningsCount = userFromEvent.WarningsCount;
+            existingUser.CreatedAt = userFromEvent.CreatedAt;
+            existingUser.CreatedByUserId = userFromEvent.CreatedByUserId;
+            existingUser.LastUpdatedAt = userFromEvent.LastUpdatedAt;
+            existingUser.LastUpdatedByUserId = userFromEvent.LastUpdatedByUserId;
+            existingUser.Version = userFromEvent.Version;
+           
             await userRepo.Save(existingUser);
-            
             logger.LogInformation($"[User Updated Event] - Processed - [User: {userFromEvent.PublicId}, Version: {userFromEvent.Version}]");
         }
     }

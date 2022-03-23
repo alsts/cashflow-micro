@@ -1,5 +1,4 @@
 using AccountService.Data.Models;
-using AccountService.Dtos;
 using Microsoft.AspNetCore.Http;
 
 namespace AccountService.Util
@@ -20,38 +19,6 @@ namespace AccountService.Util
             {
                 if (response == null) return;
                 response.Cookies.Append("X-Access-Token", token, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict });
-            }
-        
-            public static UserReadDto ToPublicDto(this User user) 
-            {
-                if (user == null) return null;
-            
-                return new UserReadDto
-                {
-                    Email = user.Email,
-                    Username = user.UserName,
-                    Firstname = user.Firstname,
-                    Lastname = user.Lastname,
-                    Gender = (int) user.Gender,
-                    CreatedAt = user.CreatedAt,
-                    Id = user.PublicId
-                };
-            }
-        
-            public static UserPublishedDto ToPublishedDto(this User user) 
-            {
-                if (user == null) return null;
-            
-                return new UserPublishedDto
-                {
-                    Email = user.Email,
-                    Username = user.UserName,
-                    Firstname = user.Firstname,
-                    Lastname = user.Lastname,
-                    Gender = (int) user.Gender,
-                    CreatedAt = user.CreatedAt,
-                    Id = user.PublicId
-                };
             }
         }
     }

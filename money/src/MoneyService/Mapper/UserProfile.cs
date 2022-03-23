@@ -1,6 +1,7 @@
 using AutoMapper;
 using Cashflow.Common.Events.Accounts;
 using MoneyService.Data.Models;
+using MoneyService.Data.Models.External;
 
 namespace MoneyService.Mapper
 {

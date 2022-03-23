@@ -18,6 +18,11 @@ using TaskService.Data;
 using TaskService.Data.Repos;
 using TaskService.Data.Repos.Interfaces;
 using TaskService.Events;
+using TaskService.Events.Consumers;
+using TaskService.Events.Publishers;
+using TaskService.Events.Publishers.Interfaces;
+using TaskService.Services.General;
+using TaskService.Services.General.interfaces;
 using TaskService.Services.Income;
 using TaskService.Services.Income.interfaces;
 using TaskService.Services.Promotion;
@@ -60,46 +65,7 @@ namespace TaskService
                     opt.UseInMemoryDatabase("InMem"));
             }
 
-            logger.LogInformation("---> Using RabbitMQ");
-            services.AddMassTransit(x =>
-            {
-                x.AddConsumer<UserCreatedConsumer>();
-                x.AddConsumer<UserUpdatedConsumer>();
-                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
-                {
-                    cfg.AutoStart = true;
-                    cfg.UseHealthCheck(provider);
-                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
-                        hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
-                    
-                    // retry delivering messages from rabbitMQ:
-                    cfg.UseDelayedExchangeMessageScheduler();
-
-                    cfg.ReceiveEndpoint(Queue.Tasks.UserCreated, ep =>
-                    {
-                        ep.Exclusive = false;
-                        ep.AutoDelete = false;
-                        ep.Durable = true;
-                        ep.PrefetchCount = 16;
-                        ep.ConfigureConsumer<UserCreatedConsumer>(provider);
-                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
-                    });
-
-                    cfg.ReceiveEndpoint(Queue.Tasks.UserUpdated, ep =>
-                    {
-                        ep.Exclusive = false;
-                        ep.AutoDelete = false;
-                        ep.Durable = true;
-                        ep.PrefetchCount = 16;
-                        ep.ConfigureConsumer<UserUpdatedConsumer>(provider);
-                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
-                    });
-                }));
-            });
-
-            services.AddMassTransitHostedService();
-            services.AddScoped<UserCreatedConsumer>();
-            services.AddScoped<UserUpdatedConsumer>();
+            ConfigureRabbitMq(services);
 
             var jwtSettings = new JwtSettings();
             Config.Bind("JwtSettings", jwtSettings);
@@ -110,6 +76,7 @@ namespace TaskService
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddTransient<ITaskRepo, TaskRepo>();
 
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITaskIncomeService, TaskIncomeService>();
             services.AddScoped<ITaskPromotionService, TaskPromotionService>();
 
@@ -174,13 +141,71 @@ namespace TaskService
                 {
                     using var serviceScope = app.ApplicationServices.CreateScope();
                     serviceScope.ServiceProvider.GetService<AppDbContext>();
-                    logger.LogInformation("---> MySQL Database connected");
+                    logger.LogInformation("---> Database connected");
                 },
                 retryCount => logger.LogInformation("---> Retrying to connect with MySQL: " + retryCount),
                 () => logger.LogError("---> Could not connect to MySQL"));
 
             // db seeder:
             PrepDb.Seed(app, logger, env);
+        }
+        
+        private void ConfigureRabbitMq(IServiceCollection services)
+        {
+            logger.LogInformation("---> Using RabbitMQ");
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<UserCreatedConsumer>();
+                x.AddConsumer<UserUpdatedConsumer>();
+                x.AddConsumer<TaskApprovedConsumer>();
+                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                {
+                    cfg.AutoStart = true;
+                    cfg.UseHealthCheck(provider);
+                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
+                        hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
+                    
+                    // retry delivering messages from rabbitMQ:
+                    cfg.UseDelayedExchangeMessageScheduler();
+
+                    cfg.ReceiveEndpoint(Queue.Tasks.UserCreated, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<UserCreatedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+
+                    cfg.ReceiveEndpoint(Queue.Tasks.UserUpdated, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<UserUpdatedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+                    
+                    cfg.ReceiveEndpoint(Queue.Tasks.TaskApproved, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<TaskApprovedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+                }));
+            });
+            
+            // inject services:
+            services.AddMassTransitHostedService();
+            services.AddScoped<UserCreatedConsumer>();
+            services.AddScoped<UserUpdatedConsumer>();
+            services.AddScoped<TaskApprovedConsumer>();
+            services.AddScoped<IMessageBusPublisher, MessageBusPublisher>();
         }
 
         private string GetMySqlDatabaseConnectionString()

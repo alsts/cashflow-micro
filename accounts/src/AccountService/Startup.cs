@@ -2,7 +2,9 @@ using System;
 using AccountService.Data;
 using AccountService.Data.Repos;
 using AccountService.Data.Repos.Interfaces;
-using AccountService.Events;
+using AccountService.Events.Consumers;
+using AccountService.Events.Publishers;
+using AccountService.Events.Publishers.Interfaces;
 using AccountService.Services;
 using AccountService.Services.interfaces;
 using AccountService.Util.Jwt;
@@ -66,32 +68,7 @@ namespace AccountService
                 services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
             }
 
-            logger.LogInformation("---> Using RabbitMQ");
-            services.AddMassTransit(x =>
-            {
-                x.AddConsumer<UserBannedConsumer>();
-                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
-                {
-                    cfg.AutoStart = true;
-                    cfg.UseHealthCheck(provider);
-                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
-                        hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
-                    
-                    // retry delivering messages from rabbitMQ:
-                    cfg.UseDelayedExchangeMessageScheduler();
-                    
-                    cfg.ReceiveEndpoint(Queue.Accounts.UserBanned, ep =>
-                    {
-                        ep.Exclusive = false;
-                        ep.AutoDelete = false;
-                        ep.Durable = true;
-                        ep.PrefetchCount = 16;
-                        ep.ConfigureConsumer<UserBannedConsumer>(provider);
-                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
-                    });
-                }));
-            });
-            services.AddMassTransitHostedService();
+            ConfigureRabbitMq(services);
 
             var jwtSettings = new JwtSettings();
             Config.Bind("JwtSettings", jwtSettings);
@@ -102,7 +79,6 @@ namespace AccountService
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
-            services.AddScoped<MessageBusPublisher>();
 
             services.AddControllers();
             services.AddScoped<LoggedInUserDataHolder>();
@@ -171,6 +147,40 @@ namespace AccountService
 
             // db seeder:
             PrepDb.Seed(app, logger, env);
+        }
+
+        private void ConfigureRabbitMq(IServiceCollection services)
+        {
+            logger.LogInformation("---> Using RabbitMQ");
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<UserBannedConsumer>();
+                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                {
+                    cfg.AutoStart = true;
+                    cfg.UseHealthCheck(provider);
+                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
+                        hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
+                    
+                    // retry delivering messages from rabbitMQ:
+                    cfg.UseDelayedExchangeMessageScheduler();
+                    
+                    cfg.ReceiveEndpoint(Queue.Accounts.UserBanned, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<UserBannedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+                }));
+            });
+            
+            // inject services:
+            services.AddMassTransitHostedService();
+            services.AddScoped<UserBannedConsumer>();
+            services.AddScoped<IMessageBusPublisher, MessageBusPublisher>();
         }
 
         private string GetMySqlDatabaseConnectionString()

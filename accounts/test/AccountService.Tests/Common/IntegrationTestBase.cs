@@ -5,6 +5,7 @@ using AccountService.Data;
 using AccountService.Data.Models;
 using AccountService.Dtos;
 using AutoFixture;
+using AutoMapper;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Utils.Interfaces;
 using Microsoft.AspNetCore.Hosting;
@@ -34,6 +35,7 @@ namespace AccountService.Tests.Common
         protected readonly HttpClient TestClient;
         public readonly IPasswordHasher PasswordHasher;
         public readonly IConfiguration Configuration;
+        public readonly IMapper Mapper;
 
         public IntegrationTestBase()
         {
@@ -48,6 +50,7 @@ namespace AccountService.Tests.Common
             TestClient = appFactory.CreateClient(new WebApplicationFactoryClientOptions {HandleCookies = true});
             Configuration = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IConfiguration>();
             PasswordHasher = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IPasswordHasher>();
+            Mapper = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IMapper>();
             DbContext = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<TDbContext>();
             Fixture = new Fixture();
             

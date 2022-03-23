@@ -46,7 +46,7 @@ namespace AccountService.Data.Repos
 
         public async Task<User> GetUserByUsernameAndPassword(string username, string hashedPassword)
         {
-            return await context.Users.FirstOrDefaultAsync(p => p.UserName == username && p.Password == hashedPassword);
+            return await context.Users.FirstOrDefaultAsync(p => p.UserName == username && p.Password == hashedPassword && p.IsActive);
         }
 
         public async Task<User> GetUserByPublicIdAndRefreshToken(string publicId, string refreshToken)

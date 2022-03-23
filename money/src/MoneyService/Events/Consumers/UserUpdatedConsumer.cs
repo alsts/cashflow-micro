@@ -4,6 +4,7 @@ using Cashflow.Common.Events.Accounts;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using MoneyService.Data.Models;
+using MoneyService.Data.Models.External;
 using MoneyService.Data.Repos.Interfaces;
 using Task = System.Threading.Tasks.Task;
 
@@ -47,18 +48,24 @@ namespace MoneyService.Events.Consumers
                 logger.LogError(errorMessage);
                 throw new Exception(errorMessage);
             }
-
+            
             // update existing user:
             existingUser.Email = userFromEvent.Email;
-            existingUser.UserName = userFromEvent.UserName;
-            existingUser.PublicId = userFromEvent.PublicId;
             existingUser.Firstname = userFromEvent.Firstname;
             existingUser.Lastname = userFromEvent.Lastname;
+            existingUser.UserName = userFromEvent.UserName;
+            existingUser.PublicId = userFromEvent.PublicId;
             existingUser.RefreshToken = userFromEvent.RefreshToken;
             existingUser.RoleId = userFromEvent.RoleId;
-            existingUser.IsBanned = userFromEvent.IsBanned;
+            existingUser.BannedAt = userFromEvent.BannedAt;
+            existingUser.WarningsCount = userFromEvent.WarningsCount;
+            existingUser.CreatedAt = userFromEvent.CreatedAt;
+            existingUser.CreatedByUserId = userFromEvent.CreatedByUserId;
+            existingUser.LastUpdatedAt = userFromEvent.LastUpdatedAt;
+            existingUser.LastUpdatedByUserId = userFromEvent.LastUpdatedByUserId;
+            existingUser.Version = userFromEvent.Version;
+
             await userRepo.Save(existingUser);
-            
             logger.LogInformation($"[User Updated Event] - Processed - [User: {userFromEvent.PublicId}, Version: {userFromEvent.Version}]");
         }
     }

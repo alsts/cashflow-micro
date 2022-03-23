@@ -14,12 +14,12 @@ namespace Cashflow.Common.Utils
         {
             foreach (var entity in changeTracker
                 .Entries()
-                .Where(x => x.Entity is BaseEntity && x.State == EntityState.Added)
+                .Where(x => !(x.Entity is ExternalEntity) && x.Entity is BaseEntity && x.State == EntityState.Added)
                 .Select(x => x.Entity)
                 .Cast<BaseEntity>())
             {
                 entity.CreatedAt = DateTime.Now;
-                entity.CreatedByUserId = loggedInUserDataHolder?.UserID ?? "";
+                entity.CreatedByUserId = loggedInUserDataHolder?.UserId ?? "";
             }
         }
         
@@ -27,13 +27,13 @@ namespace Cashflow.Common.Utils
         {
             foreach (var entity in changeTracker
                 .Entries()
-                .Where(x => x.Entity is BaseEntity && x.State == EntityState.Modified)
+                .Where(x => !(x.Entity is ExternalEntity) && x.Entity is BaseEntity && x.State == EntityState.Modified)
                 .Select(x => x.Entity)
                 .Cast<BaseEntity>())
             {
                 entity.Version += 1;
                 entity.LastUpdatedAt = DateTime.Now;
-                entity.LastUpdatedByUserId = loggedInUserDataHolder?.UserID ?? "";
+                entity.LastUpdatedByUserId = loggedInUserDataHolder?.UserId ?? "";
             }
         }
     }

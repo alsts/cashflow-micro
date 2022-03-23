@@ -8,7 +8,7 @@ namespace ModerationService.Services.interfaces
 {
     public interface IUserModerationService
     {
-        Task<UserBan> BanUser(string userId);
+        Task<User> BanUser(string userId);
         Task<IEnumerable<User>> GetUsersToModerate();
     }
 }

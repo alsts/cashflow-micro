@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AccountService.Dtos;
 using AccountService.Events;
+using AccountService.Events.Publishers.Interfaces;
 using AccountService.Services.interfaces;
 using AccountService.Util.AccountService.Util.Helpers;
 using AccountService.Util.Jwt;
@@ -22,13 +23,13 @@ namespace AccountService.Controllers
         private readonly ILogger<AccountController> logger;
         private readonly JwtTokenCreator jwtCreator;
         private readonly IUserService userService;
-        private readonly MessageBusPublisher messageBusPublisher;
+        private readonly IMessageBusPublisher messageBusPublisher;
         private readonly IMapper mapper;
 
         public AccountController(
             JwtTokenCreator jwtCreator,
             IUserService userService, 
-            MessageBusPublisher messageBusPublisher,
+            IMessageBusPublisher messageBusPublisher,
             IMapper mapper)
         {
             this.jwtCreator = jwtCreator;
@@ -43,7 +44,7 @@ namespace AccountService.Controllers
             var user = await userService.SignIn(model);
             var token = jwtCreator.GenerateForUser(user);
             Response.AppendAuthCookie(user, token);
-            return Ok(user.ToPublicDto());
+            return Ok(mapper.Map<UserReadDto>(user));
         }
 
         [HttpPost("signup")]
@@ -60,7 +61,7 @@ namespace AccountService.Controllers
             var token = jwtCreator.GenerateForUser(user);
             Response.AppendAuthCookie(user, token); 
 
-            return Ok(user.ToPublicDto());
+            return Ok(mapper.Map<UserReadDto>(user));
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -79,7 +80,7 @@ namespace AccountService.Controllers
         public async Task<IActionResult> GetCurrent()
         {
             var user = await userService.GetCurrent();
-            return Ok(user.ToPublicDto());
+            return Ok(mapper.Map<UserReadDto>(user));
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -94,7 +95,7 @@ namespace AccountService.Controllers
             var user = await userService.Update(model);
             await messageBusPublisher.PublishUpdatedUser(user);
             
-            return Ok(user.ToPublicDto());
+            return Ok(mapper.Map<UserReadDto>(user));
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -102,7 +103,7 @@ namespace AccountService.Controllers
         public async Task<IActionResult> GetById(string publicId)
         {
             var user = await userService.GetByPublicId(publicId);
-            return Ok(user.ToPublicDto());
+            return Ok(mapper.Map<UserReadDto>(user));
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -110,8 +111,8 @@ namespace AccountService.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
-            var user = await userService.GetAll();
-            return Ok(user.Select(u => u.ToPublicDto()));
+            var users = await userService.GetAll();
+            return Ok(users.Select(user => mapper.Map<UserReadDto>(user)));
         }
     }
 }

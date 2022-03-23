@@ -45,6 +45,11 @@ namespace TaskService.Data.Repos
             return await context.Tasks.ToListAsync();
         }
 
+        public async Task<IEnumerable<TaskEntity>> GetByUserId(int userId)
+        {
+            return await context.Tasks.Where(t => t.UserId == userId).ToListAsync();
+        }
+
         private async Task<bool> SaveChanges()
         {
             return await context.SaveChangesAsync() >= 0;
