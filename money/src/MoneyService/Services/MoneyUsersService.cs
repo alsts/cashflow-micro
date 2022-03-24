@@ -11,17 +11,14 @@ namespace MoneyService.Services
 {
     public class MoneyUsersService : IMoneyUsersService
     {
-        private readonly ITaskRepo taskRepo;
         private readonly IUserRepo userRepo;
         private readonly IUserTransactionRepo userTransactionRepo;
         private readonly IUsersService usersService;
 
         public MoneyUsersService(
-            ITaskRepo taskRepo,
             IUsersService usersService,
             IUserTransactionRepo userTransactionRepo)
         {
-            this.taskRepo = taskRepo;
             this.usersService = usersService;
             this.userTransactionRepo = userTransactionRepo;
         }

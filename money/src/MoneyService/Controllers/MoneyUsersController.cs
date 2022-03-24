@@ -14,17 +14,10 @@ namespace MoneyService.Controllers
     {
         private readonly ILogger<MoneyUsersController> logger;
         private readonly IMoneyUsersService moneyUsersService;
-        private readonly IMessageBusPublisher messageBusPublisher;
-        private readonly IMapper mapper;
 
-        public MoneyUsersController(
-            IMoneyUsersService moneyUsersService,
-            IMessageBusPublisher messageBusPublisher,
-            IMapper mapper)
+        public MoneyUsersController(IMoneyUsersService moneyUsersService)
         {
             this.moneyUsersService = moneyUsersService;
-            this.messageBusPublisher = messageBusPublisher;
-            this.mapper = mapper;
         }
 
         [HttpGet("balance")]
@@ -37,28 +30,14 @@ namespace MoneyService.Controllers
         [HttpPost("balance/deposit/{amount}")]
         public async Task<IActionResult> DepositToMainBalance(decimal amount)
         {
-            if (!messageBusPublisher.IsEventBusHealthy())
-            {
-                return BadRequest();
-            }
-            
-            UserTransaction userTransaction = await moneyUsersService.DepositToUserMainBalance(amount);
-            await messageBusPublisher.PublishCreatedUserTransaction(userTransaction);
-            
+            await moneyUsersService.DepositToUserMainBalance(amount);
             return Ok();
         }
 
         [HttpPost("balance/withdraw")]
         public async Task<IActionResult> WithdrawFromMainBalance(decimal amount)
         {
-            if (!messageBusPublisher.IsEventBusHealthy())
-            {
-                return BadRequest();
-            }
-            
-            UserTransaction userWithdrawalTransaction = await moneyUsersService.WithdrawFromMainBalance(amount);
-            await messageBusPublisher.PublishCreatedUserTransaction(userWithdrawalTransaction);
-            
+            await moneyUsersService.WithdrawFromMainBalance(amount);
             return Ok();
         }
 
@@ -72,17 +51,7 @@ namespace MoneyService.Controllers
         [HttpPost("ad-balance/add")]
         public async Task<IActionResult> AddMoneyToAdBalance(decimal amount)
         {
-            if (!messageBusPublisher.IsEventBusHealthy())
-            {
-                return BadRequest();
-            }
-            
-            (UserTransaction userMainBalanceTransaction, 
-                UserTransaction userAdBalanceTransaction) = await moneyUsersService.AddMoneyToAdBalance(amount);
-
-            await messageBusPublisher.PublishCreatedUserTransaction(userMainBalanceTransaction);
-            await messageBusPublisher.PublishCreatedUserTransaction(userAdBalanceTransaction);
-            
+            await moneyUsersService.AddMoneyToAdBalance(amount);
             return Ok();
         }
     }

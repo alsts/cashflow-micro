@@ -41,7 +41,7 @@ namespace MoneyService.Services
             return await taskTransactionRepo.GetTaskBalance(task.PublicId);
         }
 
-        public async Task<(UserTransaction userTransaction, TaskTransaction taskTransaction)> AddMoneyToTaskBalance(string taskId, decimal amount)
+        public async Task<TaskTransaction> AddMoneyToTaskBalance(string taskId, decimal amount)
         {
             var currentUser = await usersService.GetCurrentUser();
             var task = await GetTaskForUser(taskId, currentUser);
@@ -75,10 +75,10 @@ namespace MoneyService.Services
             };
             await taskTransactionRepo.Save(taskTransaction);
 
-            return (userTransaction, taskTransaction);
+            return taskTransaction;
         }
 
-        public async Task<(UserTransaction userTransaction, TaskTransaction taskTransaction)> ReturnMoneyFromTaskBalance(string taskId)
+        public async Task<TaskTransaction> ReturnMoneyFromTaskBalance(string taskId)
         {
             var currentUser = await usersService.GetCurrentUser();
             var task = await GetTaskForUser(taskId, currentUser);
@@ -112,7 +112,7 @@ namespace MoneyService.Services
             };
             await taskTransactionRepo.Save(taskTransaction);
             
-            return (userTransaction, taskTransaction);
+            return taskTransaction;
         }
 
         public async Task<List<TaskTransaction>> GetTaskTransactionsHistoryForCurrentUser()

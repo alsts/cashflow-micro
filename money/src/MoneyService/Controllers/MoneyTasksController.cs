@@ -48,24 +48,16 @@ namespace MoneyService.Controllers
                 return BadRequest();
             }
             
-            (UserTransaction userTransaction, 
-                TaskTransaction taskTransaction) = await moneyTasksService.AddMoneyToTaskBalance(taskId, amount);
-            
-            await messageBusPublisher.PublishCreatedUserTransaction(userTransaction);
+            TaskTransaction taskTransaction = await moneyTasksService.AddMoneyToTaskBalance(taskId, amount);
             await messageBusPublisher.PublishCreatedTaskTransaction(taskTransaction);
-            
             return Ok();
         }
         
         [HttpPost("{taskId}/balance/return")]
         public async Task<IActionResult> ReturnMoneyFromTaskBalance(string taskId)
         {
-            (UserTransaction userTransaction, 
-                TaskTransaction taskTransaction) = await moneyTasksService.ReturnMoneyFromTaskBalance(taskId);
-            
-            await messageBusPublisher.PublishCreatedUserTransaction(userTransaction);
+            TaskTransaction taskTransaction = await moneyTasksService.ReturnMoneyFromTaskBalance(taskId);
             await messageBusPublisher.PublishCreatedTaskTransaction(taskTransaction);
-            
             return Ok();
         }
         
