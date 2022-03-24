@@ -1,4 +1,5 @@
 using AutoMapper;
+using Cashflow.Common.Events.Money;
 using MoneyService.Data.Models;
 using MoneyService.Dtos;
 
@@ -10,6 +11,7 @@ namespace MoneyService.Mapper
         {
             CreateMap<UserTransactionReadDto, UserTransaction>().ReverseMap();
             CreateMap<TaskTransactionReadDto, TaskTransaction>().ReverseMap();
+            CreateMap<TaskTransactionCreatedEvent, TaskTransaction>().ReverseMap();
         }
     }
 }

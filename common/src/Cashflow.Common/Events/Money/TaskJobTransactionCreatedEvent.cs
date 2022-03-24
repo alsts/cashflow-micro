@@ -8,7 +8,7 @@ namespace Cashflow.Common.Events.Money
         public decimal Amount { get; set; }
         public string Description { get; set; }
         public int TransactionStatus { get; set; }
-        public int TaskJobId { get; set; }
+        public string TaskJobId { get; set; }
         // Generic:
         public string PublicId { get; set; }
         public DateTime CreatedAt { get; set; }

@@ -2,8 +2,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MoneyService.Data.Models;
-using MoneyService.Events.Publishers.Interfaces;
+using MoneyService.Dtos;
 using MoneyService.Services.interfaces;
 
 namespace MoneyService.Controllers
@@ -14,10 +13,12 @@ namespace MoneyService.Controllers
     {
         private readonly ILogger<MoneyUsersController> logger;
         private readonly IMoneyUsersService moneyUsersService;
+        private readonly IMapper mapper;
 
-        public MoneyUsersController(IMoneyUsersService moneyUsersService)
+        public MoneyUsersController(IMoneyUsersService moneyUsersService, IMapper mapper)
         {
             this.moneyUsersService = moneyUsersService;
+            this.mapper = mapper;
         }
 
         [HttpGet("balance")]
@@ -30,15 +31,15 @@ namespace MoneyService.Controllers
         [HttpPost("balance/deposit/{amount}")]
         public async Task<IActionResult> DepositToMainBalance(decimal amount)
         {
-            await moneyUsersService.DepositToUserMainBalance(amount);
-            return Ok();
+            var depositTransaction = await moneyUsersService.DepositToUserMainBalance(amount);
+            return Ok(mapper.Map<UserTransactionReadDto>(depositTransaction));
         }
 
-        [HttpPost("balance/withdraw")]
+        [HttpPost("balance/withdraw/{amount}")]
         public async Task<IActionResult> WithdrawFromMainBalance(decimal amount)
         {
-            await moneyUsersService.WithdrawFromMainBalance(amount);
-            return Ok();
+            var withdrawTransaction = await moneyUsersService.WithdrawFromMainBalance(amount);
+            return Ok(mapper.Map<UserTransactionReadDto>(withdrawTransaction));
         }
 
         [HttpGet("ad-balance")]
@@ -48,7 +49,7 @@ namespace MoneyService.Controllers
             return Ok(userAdBalance);
         }
 
-        [HttpPost("ad-balance/add")]
+        [HttpPost("ad-balance/add/{amount}")]
         public async Task<IActionResult> AddMoneyToAdBalance(decimal amount)
         {
             await moneyUsersService.AddMoneyToAdBalance(amount);

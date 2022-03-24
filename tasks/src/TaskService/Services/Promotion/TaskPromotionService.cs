@@ -100,6 +100,13 @@ namespace TaskService.Services.Promotion
             {
                 throw new HttpStatusException(HttpStatusCode.NotFound, "Task not found");
             }
+            
+            var user = await userService.GetCurrent();
+            if (task.UserId != user.Id)
+            {
+                throw new HttpStatusException(HttpStatusCode.BadRequest, "Not your task");
+            }
+            
             return task;
         }
 

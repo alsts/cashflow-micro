@@ -9,7 +9,6 @@ namespace TaskService.Dtos.Promotion
         public string Description { get; set; }
         public string AuthorId { get; set; }
         public int TaskStatus { get; set; }
-        public bool IsActive { get; set; }
         public int Version { get; set; }
         public decimal RewardPrice { get; set; }
         public DateTime CreatedAt { get; set; }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Data.Models;
 using TaskService.Data.Models.External;
@@ -15,5 +16,7 @@ namespace TaskService.Data.Models
         // Comes from UserService:
         public int UserId { get; set; }
         public User User { get; set; }
+        
+        [NotMapped] public decimal AvailableBalance { get; set; }
     }
 }

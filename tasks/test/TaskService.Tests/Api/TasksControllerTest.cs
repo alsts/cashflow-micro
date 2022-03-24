@@ -65,7 +65,7 @@ namespace TaskService.Tests.Api
             // Assert
             Assert.NotNull(response);
             response.EnsureSuccessStatusCode();
-            var createdTask = await response.Content.ReadAsAsync<TaskReadDto>();
+            var createdTask = await response.Content.ReadAsAsync<PromotionTaskDto>();
             createdTask.Should().NotBeNull();
         }
         
@@ -226,7 +226,7 @@ namespace TaskService.Tests.Api
             // Assert
             Assert.NotNull(response);
             response.EnsureSuccessStatusCode();
-            var updatedTask = await response.Content.ReadAsAsync<TaskReadDto>();
+            var updatedTask = await response.Content.ReadAsAsync<PromotionTaskDto>();
             updatedTask.Should().NotBeNull();
             Assert.Equal(formUpdateModel["title"], updatedTask.Title);
             Assert.Equal(formUpdateModel["description"], updatedTask.Description);
@@ -287,9 +287,9 @@ namespace TaskService.Tests.Api
             // Assert
             Assert.NotNull(response);
             response.EnsureSuccessStatusCode();
-            var createdTask = await response.Content.ReadAsAsync<TaskReadDto>();
+            var createdTask = await response.Content.ReadAsAsync<PromotionTaskDto>();
             createdTask.Should().NotBeNull();
-            createdTask.Should().BeEquivalentTo(task.ToPublicDto());
+            createdTask.Should().BeEquivalentTo(Mapper.Map<PromotionTaskDto>(task));
         }
         
         [Fact]
@@ -353,7 +353,7 @@ namespace TaskService.Tests.Api
 
             // Assert
             Assert.NotNull(response);
-            var tasks = await response.Content.ReadAsAsync<List<TaskReadDto>>();
+            var tasks = await response.Content.ReadAsAsync<List<PromotionTaskDto>>();
             tasks.Should().NotBeEmpty();
             Assert.Equal(3, tasks.Count);
         }

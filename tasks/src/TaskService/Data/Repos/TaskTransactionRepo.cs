@@ -49,7 +49,7 @@ namespace TaskService.Data.Repos
         {
             return await context.TaskTransactions
                 .Where(x => x.PublicId == taskTransactionId)
-                .FirstAsync();
+                .FirstOrDefaultAsync();
         }
 
         private async Task<bool> SaveChanges()

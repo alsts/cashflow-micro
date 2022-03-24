@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using AutoFixture;
+using AutoMapper;
 using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Data.Enums;
 using Microsoft.AspNetCore.Hosting;
@@ -32,6 +33,7 @@ namespace TaskService.Tests.Common
         protected readonly HttpClient TestClient;
         protected readonly FakeJwtTokenCreator FakeJwtTokenCreator;
         public readonly IConfiguration Configuration;
+        public readonly IMapper Mapper;
 
         public IntegrationTestBase()
         {
@@ -46,6 +48,7 @@ namespace TaskService.Tests.Common
             TestClient = appFactory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
             Configuration = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IConfiguration>();
             DbContext = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<TDbContext>();
+            Mapper = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IMapper>();
 
             var jwtSettings = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<JwtSettings>();
             

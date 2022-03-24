@@ -10,12 +10,16 @@ namespace TaskService.Mapper
     {
         public TaskProfile()
         {
-            CreateMap<IncomeTaskDto, Task>().ReverseMap();
-            CreateMap<TaskCreatedEvent, Task>().ReverseMap();
-            CreateMap<TaskUpdatedEvent, Task>().ReverseMap();
+            CreateMap<Task, IncomeTaskDto>()
+                .ForMember(o => o.Id, b => b.MapFrom(z => z.PublicId))
+                .ForMember(o => o.AuthorId, b => b.MapFrom(z => z.CreatedByUserId));
+            
             CreateMap<Task, PromotionTaskDto>()
                 .ForMember(o => o.Id, b => b.MapFrom(z => z.PublicId))
                 .ForMember(o => o.AuthorId, b => b.MapFrom(z => z.CreatedByUserId));
+            
+            CreateMap<TaskCreatedEvent, Task>().ReverseMap();
+            CreateMap<TaskUpdatedEvent, Task>().ReverseMap();
         }
     }
 }
