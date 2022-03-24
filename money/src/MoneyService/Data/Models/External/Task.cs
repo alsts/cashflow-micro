@@ -3,7 +3,7 @@ using Cashflow.Common.Data.Models;
 
 namespace MoneyService.Data.Models.External
 {
-    public class Task : BaseEntity
+    public class Task : ExternalEntity
     {
         public string Title { get; set; }
         public string Description { get; set; }

@@ -18,6 +18,6 @@ namespace AccountService.Data.Models
         // Moderation Related:
         public bool IsActive { get; set; }
         public int WarningsCount { get; set; }
-        public DateTime? BannedAt { get; set; }
+        public DateTime? BannedAt { get; set; } = null;
     }
 }

@@ -3,11 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cashflow.Common.Data.Enums;
 using Microsoft.EntityFrameworkCore;
-using MoneyService.Data.Models;
-using MoneyService.Data.Repos.Interfaces;
-using Task = System.Threading.Tasks.Task;
+using TaskService.Data.Models.External;
+using TaskService.Data.Repos.Interfaces;
 
-namespace MoneyService.Data.Repos
+namespace TaskService.Data.Repos
 {
     public class TaskTransactionRepo : ITaskTransactionRepo
     {
@@ -17,7 +16,7 @@ namespace MoneyService.Data.Repos
         {
             this.context = context;
         }
-
+        
         public async Task Save(TaskTransaction taskTransaction)
         {
             if (taskTransaction.Id != 0)
@@ -34,7 +33,7 @@ namespace MoneyService.Data.Repos
 
         public async Task<decimal> GetTaskBalance(string taskId)
         {
-            var statuses = new List<int>()
+            var statuses = new List<int>
             {
                 (int)TransactionStatus.Completed,
                 (int)TransactionStatus.Reserved,
@@ -46,32 +45,11 @@ namespace MoneyService.Data.Repos
                 .SumAsync(x => x.Amount);
         }
 
-        public async Task<decimal> GetTaskPendingBalance(string taskId)
+        public async Task<TaskTransaction> GetByPublicId(string taskTransactionId)
         {
-            var statuses = new List<int>()
-            {
-                (int)TransactionStatus.Reserved,
-                (int)TransactionStatus.Pending
-            };
-            
-            // do not include pending transactions
             return await context.TaskTransactions
-                .Where(x => x.TaskId == taskId && statuses.Contains(x.TransactionStatus))
-                .SumAsync(x => x.Amount);
-        }
-
-        public async Task<List<TaskTransaction>> GetTransactionsHistory(string userId)
-        {
-            var statuses = new List<int>()
-            {
-                (int)TransactionStatus.Completed,
-                (int)TransactionStatus.Reserved,
-                (int)TransactionStatus.Pending
-            };
-            
-            return await context.TaskTransactions
-                .Where(x => x.CreatedByUserId == userId && statuses.Contains(x.TransactionStatus))
-                .ToListAsync();
+                .Where(x => x.PublicId == taskTransactionId)
+                .FirstAsync();
         }
 
         private async Task<bool> SaveChanges()

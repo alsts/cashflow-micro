@@ -6,6 +6,7 @@ using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Exceptions;
 using TaskService.Data.Repos.Interfaces;
 using TaskService.Dtos.Promotion;
+using TaskService.Events.Publishers.Interfaces;
 using TaskService.Services.General.interfaces;
 using TaskService.Services.Promotion.interfaces;
 using TaskEntity = TaskService.Data.Models.Task;
@@ -18,15 +19,18 @@ namespace TaskService.Services.Promotion
     {
         private readonly ITaskRepo taskRepo;
         private readonly IUserService userService;
+        private readonly IMoneyTasksService moneyTasksService;
         private readonly LoggedInUserDataHolder loggedInUserDataHolder;
 
         public TaskPromotionService(
             ITaskRepo taskRepo,
             IUserService userService,
+            IMoneyTasksService moneyTasksService,
             LoggedInUserDataHolder loggedInUserDataHolder)
         {
             this.taskRepo = taskRepo;
             this.userService = userService;
+            this.moneyTasksService = moneyTasksService;
             this.loggedInUserDataHolder = loggedInUserDataHolder;
         }
 
@@ -46,6 +50,7 @@ namespace TaskService.Services.Promotion
                 PublicId = Guid.NewGuid().ToString(),
                 TaskStatus = TaskStatus.PendingApproval,
                 CreatedAt = DateTime.Now,
+                RewardPrice = taskCreateDto.RewardPrice,
                 UserId = user.Id
             };
             
@@ -82,6 +87,7 @@ namespace TaskService.Services.Promotion
 
             task.Title = taskUpdateDto.Title;
             task.Description = taskUpdateDto.Description;
+            task.RewardPrice = taskUpdateDto.RewardPrice;
 
             await taskRepo.Save(task);
             return task;
@@ -108,14 +114,56 @@ namespace TaskService.Services.Promotion
             return await taskRepo.GetByUserId(user.Id);
         }
 
-        public Task StartTask(string publicId)
+        public async Task StartTask(string publicId)
         {
-            throw new NotImplementedException();
+            var task = await taskRepo.GetByPublicId(publicId);
+            if (task == null)
+            {
+                throw new HttpStatusException(HttpStatusCode.NotFound, "Task not found");
+            }
+
+            var user = await userService.GetCurrent();
+            if (task.UserId != user.Id)
+            {
+                throw new HttpStatusException(HttpStatusCode.BadRequest, "Not your task");
+            }
+
+            if (task.TaskStatus != TaskStatus.Stopped)
+            {
+                throw new HttpStatusException(HttpStatusCode.BadRequest, "Can not start the task");
+            }
+            
+            var taskAvailableBalance = await moneyTasksService.GetTaskBalance(task.PublicId);
+            if (taskAvailableBalance < task.RewardPrice)
+            {
+                throw new HttpStatusException(HttpStatusCode.BadRequest, "Not enough money on task balance");
+            }
+
+            task.TaskStatus = TaskStatus.Running;
+            await taskRepo.Save(task);
         }
 
-        public Task StopTask(string publicId)
+        public async Task StopTask(string publicId)
         {
-            throw new NotImplementedException();
+            var task = await taskRepo.GetByPublicId(publicId);
+            if (task == null)
+            {
+                throw new HttpStatusException(HttpStatusCode.NotFound, "Task not found");
+            }
+
+            var user = await userService.GetCurrent();
+            if (task.UserId != user.Id)
+            {
+                throw new HttpStatusException(HttpStatusCode.BadRequest, "Not your task");
+            }
+
+            if (task.TaskStatus != TaskStatus.Running)
+            {
+                throw new HttpStatusException(HttpStatusCode.BadRequest, "Can not stopped the task");
+            }
+
+            task.TaskStatus = TaskStatus.Stopped;
+            await taskRepo.Save(task);
         }
     }
 }

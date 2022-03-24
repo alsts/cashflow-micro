@@ -47,7 +47,6 @@ namespace AccountService.Events.Consumers
             }
 
             user.BannedAt = DateTime.Now;
-            user.IsActive = false;
             await userRepo.Save(user);
             logger.LogInformation($"[User Banned Event] - Processed [User: {user.PublicId}]");
 

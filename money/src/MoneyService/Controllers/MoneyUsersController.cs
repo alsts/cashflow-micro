@@ -34,7 +34,7 @@ namespace MoneyService.Controllers
             return Ok(userMainBalance);
         }
         
-        [HttpPost("balance/deposit")]
+        [HttpPost("balance/deposit/{amount}")]
         public async Task<IActionResult> DepositToMainBalance(decimal amount)
         {
             if (!messageBusPublisher.IsEventBusHealthy())

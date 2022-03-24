@@ -6,5 +6,6 @@ namespace TaskService.Dtos.Promotion
     {
         [Required] [MaxLength(50)] public string Title { get; set; }
         [Required] [MaxLength(50)] public string Description { get; set; }
+        [Required] public decimal RewardPrice { get; set; }
     }
 }

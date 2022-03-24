@@ -1,6 +1,7 @@
 using System;
 using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Events;
+using Cashflow.Common.Events.Money;
 using Cashflow.Common.Middlewares;
 using Cashflow.Common.Utils;
 using GreenPipes;
@@ -75,10 +76,12 @@ namespace TaskService
 
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddTransient<ITaskRepo, TaskRepo>();
+            services.AddScoped<ITaskTransactionRepo, TaskTransactionRepo>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITaskIncomeService, TaskIncomeService>();
             services.AddScoped<ITaskPromotionService, TaskPromotionService>();
+            services.AddScoped<IMoneyTasksService, MoneyTasksService>();
 
             services.AddControllers();
             services.AddScoped<LoggedInUserDataHolder>();
@@ -158,6 +161,7 @@ namespace TaskService
                 x.AddConsumer<UserCreatedConsumer>();
                 x.AddConsumer<UserUpdatedConsumer>();
                 x.AddConsumer<TaskApprovedConsumer>();
+                x.AddConsumer<TaskTransactionCreatedConsumer>();
                 x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
                     cfg.AutoStart = true;
@@ -197,6 +201,16 @@ namespace TaskService
                         ep.ConfigureConsumer<TaskApprovedConsumer>(provider);
                         ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
                     });
+                    
+                    cfg.ReceiveEndpoint(Queue.Tasks.TaskTransactionCreated, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<TaskTransactionCreatedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
                 }));
             });
             
@@ -205,6 +219,7 @@ namespace TaskService
             services.AddScoped<UserCreatedConsumer>();
             services.AddScoped<UserUpdatedConsumer>();
             services.AddScoped<TaskApprovedConsumer>();
+            services.AddScoped<TaskTransactionCreatedConsumer>();
             services.AddScoped<IMessageBusPublisher, MessageBusPublisher>();
         }
 

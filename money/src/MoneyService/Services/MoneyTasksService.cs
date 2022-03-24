@@ -38,7 +38,7 @@ namespace MoneyService.Services
         {
             var currentUser = await usersService.GetCurrentUser();
             var task = await GetTaskForUser(taskId, currentUser);
-            return await taskTransactionRepo.GetTaskBalance(task.Id);
+            return await taskTransactionRepo.GetTaskBalance(task.PublicId);
         }
 
         public async Task<(UserTransaction userTransaction, TaskTransaction taskTransaction)> AddMoneyToTaskBalance(string taskId, decimal amount)

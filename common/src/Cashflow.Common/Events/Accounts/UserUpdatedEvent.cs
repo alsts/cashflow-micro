@@ -15,7 +15,7 @@ namespace Cashflow.Common.Events.Accounts
         // Moderation:
         public bool IsActive { get; set; }
         public int WarningsCount { get; set; }
-        public DateTime BannedAt { get; set; }
+        public DateTime? BannedAt { get; set; }
         // Generic:
         public string PublicId { get; set; }
         public DateTime CreatedAt { get; set; }

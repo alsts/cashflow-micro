@@ -10,8 +10,8 @@ namespace MoneyService.Data.Repos.Interfaces
     {
         Task Save(TaskTransaction taskTransaction);
         
-        Task<decimal> GetTaskBalance(int taskId);
-        Task<decimal> GetTaskPendingBalance(int taskId);
+        Task<decimal> GetTaskBalance(string taskId);
+        Task<decimal> GetTaskPendingBalance(string taskId);
         Task<List<TaskTransaction>> GetTransactionsHistory(string userId);
     }
 }
