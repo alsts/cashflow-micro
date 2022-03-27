@@ -4,14 +4,14 @@ namespace TaskService.Tests.Common
     {
         public static class Tasks
         {
-            private const string TaskBase = "/api/tasks";
-            public const string GetCurrent = TaskBase;
-            public const string Create = TaskBase;
-            public const string Update = TaskBase + "/{id}";
-            public const string GetAll = TaskBase +  "";
-            public const string SignUp = TaskBase +  "/signup";
-            public const string Refresh = TaskBase +  "/refresh";
-            public const string GetById = TaskBase +  "/{id}";
+            public static class Promotion
+            {
+                private const string TasksPromotionBase =  "/api/promotion/tasks";
+                public const string Create = TasksPromotionBase;
+                public const string Update = TasksPromotionBase + "/{id}";
+                public const string GetUserTasks = TasksPromotionBase +  "";
+                public const string GetById = TasksPromotionBase +  "/{id}";
+            }
         }
     }
 }
