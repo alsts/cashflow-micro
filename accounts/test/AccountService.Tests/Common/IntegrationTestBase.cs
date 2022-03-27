@@ -4,12 +4,13 @@ using System.Net.Http;
 using AccountService.Data;
 using AccountService.Data.Models;
 using AccountService.Dtos;
+using AccountService.Events.Publishers.Interfaces;
+using AccountService.Tests.Common.Stubs;
 using AutoFixture;
 using AutoMapper;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Utils.Interfaces;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +44,11 @@ namespace AccountService.Tests.Common
                 .WithWebHostBuilder(builder =>
                 {
                     builder
-                        .ConfigureServices(services => {})
+                        .ConfigureServices(services =>
+                        {
+                            // Add Mock of external services here:
+                            services.AddScoped<IMessageBusPublisher, FakeMessageBusPublisher>();
+                        })
                         .UseEnvironment("Testing");
                 });
             

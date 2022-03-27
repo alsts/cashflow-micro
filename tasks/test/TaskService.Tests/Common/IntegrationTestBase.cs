@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using TaskService.Data;
 using TaskService.Data.Models;
 using TaskService.Data.Models.External;
+using TaskService.Events.Publishers.Interfaces;
+using TaskService.Tests.Common.Stubs;
 using Xunit;
 using TaskEntity = TaskService.Data.Models.Task;
 
@@ -41,7 +43,11 @@ namespace TaskService.Tests.Common
                 .WithWebHostBuilder(builder =>
                 {
                     builder
-                        .ConfigureServices(services => { })
+                        .ConfigureServices(services =>
+                        {
+                            // Add Mock of external services here:
+                            services.AddScoped<IMessageBusPublisher, FakeMessageBusPublisher>();
+                        })
                         .UseEnvironment("Testing");
                 });
 

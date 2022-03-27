@@ -5,7 +5,6 @@ using System.Net.Http;
 using AccountService.Data;
 using AccountService.Dtos;
 using AccountService.Tests.Common;
-using AccountService.Util.AccountService.Util.Helpers;
 using Cashflow.Common.Data.Enums;
 using FluentAssertions;
 using Microsoft.Net.Http.Headers;

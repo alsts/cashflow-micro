@@ -2,13 +2,10 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using Cashflow.Common.Data.Enums;
 using FluentAssertions;
 using TaskService.Data;
-using TaskService.Dtos;
 using TaskService.Dtos.Promotion;
 using TaskService.Tests.Common;
-using TaskService.Util;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
