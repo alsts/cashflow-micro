@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ModerationService.Data.Models.External;
 using ModerationService.Data.Repos.Interfaces;
-using TaskService.Data.Models;
 using Task = System.Threading.Tasks.Task;
 
 namespace ModerationService.Data.Repos
@@ -10,6 +11,7 @@ namespace ModerationService.Data.Repos
     public class UserRepo : IUserRepo
     {
         private readonly AppDbContext context;
+        private const int WARNING_COUNT_THRESHOLD = 5;
 
         public UserRepo(AppDbContext context)
         {
@@ -20,12 +22,12 @@ namespace ModerationService.Data.Repos
         {
             return await context.Users.FirstOrDefaultAsync(p => p.PublicId == publicId && p.RefreshToken == refreshToken);
         }
-        
+
         public async Task<User> GetByPublicId(string publicId)
         {
             return await context.Users.FirstOrDefaultAsync(p => p.PublicId == publicId);
         }
-        
+
         public async Task<IEnumerable<User>> GetAll()
         {
             return await context.Users.ToListAsync();
@@ -41,10 +43,18 @@ namespace ModerationService.Data.Repos
             {
                 await context.Users.AddAsync(user);
             }
-            
+
             await SaveChanges();
         }
-        
+
+        public async Task<IEnumerable<User>> GetUsersToModerate()
+        {
+            return await context.Users.Where(x =>
+                    x.BannedAt == null
+                    // && x.WarningsCount > WARNING_COUNT_THRESHOLD
+            ).ToListAsync();
+        }
+
         private async Task<bool> SaveChanges()
         {
             return await context.SaveChangesAsync() >= 0;

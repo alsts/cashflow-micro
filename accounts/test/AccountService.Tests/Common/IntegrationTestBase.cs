@@ -4,11 +4,13 @@ using System.Net.Http;
 using AccountService.Data;
 using AccountService.Data.Models;
 using AccountService.Dtos;
+using AccountService.Events.Publishers.Interfaces;
+using AccountService.Tests.Common.Stubs;
 using AutoFixture;
+using AutoMapper;
 using Cashflow.Common.Data.Enums;
 using Cashflow.Common.Utils.Interfaces;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +36,7 @@ namespace AccountService.Tests.Common
         protected readonly HttpClient TestClient;
         public readonly IPasswordHasher PasswordHasher;
         public readonly IConfiguration Configuration;
+        public readonly IMapper Mapper;
 
         public IntegrationTestBase()
         {
@@ -41,13 +44,18 @@ namespace AccountService.Tests.Common
                 .WithWebHostBuilder(builder =>
                 {
                     builder
-                        .ConfigureServices(services => {})
+                        .ConfigureServices(services =>
+                        {
+                            // Add Mock of external services here:
+                            services.AddScoped<IMessageBusPublisher, FakeMessageBusPublisher>();
+                        })
                         .UseEnvironment("Testing");
                 });
             
             TestClient = appFactory.CreateClient(new WebApplicationFactoryClientOptions {HandleCookies = true});
             Configuration = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IConfiguration>();
             PasswordHasher = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IPasswordHasher>();
+            Mapper = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IMapper>();
             DbContext = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<TDbContext>();
             Fixture = new Fixture();
             

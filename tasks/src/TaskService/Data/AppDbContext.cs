@@ -1,10 +1,9 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Utils;
 using Microsoft.EntityFrameworkCore;
-using TaskService.Data.Models;
+using TaskService.Data.Models.External;
 using TaskEntity = TaskService.Data.Models.Task;
 
 namespace TaskService.Data
@@ -20,20 +19,19 @@ namespace TaskService.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<TaskEntity> Tasks { get; set; }
+        public DbSet<UserTransaction> UserTransactions { get; set; }
+        public DbSet<TaskTransaction> TaskTransactions { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder
-                .Entity<User>()
-                .HasMany(p => p.Tasks)
-                .WithOne(p => p.User!)
-                .HasForeignKey(p => p.UserId);
-
-            modelBuilder
-                .Entity<TaskEntity>()
-                .HasOne(p => p.User)
-                .WithMany(p => p.Tasks)
-                .HasForeignKey(p => p.UserId);
+            // enum conversion:
+            modelBuilder.Entity<TaskEntity>()
+                .Property(c => c.TaskStatus)
+                .HasConversion<int>();
+            
+            modelBuilder.Entity<User>()
+                .Property(c => c.Gender)
+                .HasConversion<int>();
         }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())

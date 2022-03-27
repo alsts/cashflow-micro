@@ -2,12 +2,10 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using Cashflow.Common.Data.Enums;
 using FluentAssertions;
 using TaskService.Data;
-using TaskService.Dtos;
+using TaskService.Dtos.Promotion;
 using TaskService.Tests.Common;
-using TaskService.Util;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
@@ -27,7 +25,7 @@ namespace TaskService.Tests.Api
                 { "title", "task-title" },
                 { "description", "task-description" }
             };
-            var request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Tasks.Create);
+            var request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Tasks.Promotion.Create);
             request.Content = JsonContent.Create(formModel);
 
             // Act
@@ -54,7 +52,7 @@ namespace TaskService.Tests.Api
                 { "title", "task-title" },
                 { "description", "task-description" }
             };
-            var request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Tasks.Create);
+            var request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Tasks.Promotion.Create);
             request.Content = JsonContent.Create(formModel);
 
             // Act
@@ -64,7 +62,7 @@ namespace TaskService.Tests.Api
             // Assert
             Assert.NotNull(response);
             response.EnsureSuccessStatusCode();
-            var createdTask = await response.Content.ReadAsAsync<TaskReadDto>();
+            var createdTask = await response.Content.ReadAsAsync<PromotionTaskDto>();
             createdTask.Should().NotBeNull();
         }
         
@@ -83,7 +81,7 @@ namespace TaskService.Tests.Api
                 { "title", "" },
                 { "description", "task-description" }
             };
-            var request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Tasks.Create);
+            var request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Tasks.Promotion.Create);
             request.Content = JsonContent.Create(formModel);
 
             // Act
@@ -101,7 +99,7 @@ namespace TaskService.Tests.Api
             formModel["title"] = "task-title";
             formModel["description"] = "";
             
-            request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Tasks.Create);
+            request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Tasks.Promotion.Create);
             request.Content = JsonContent.Create(formModel);
 
             // Act
@@ -128,7 +126,7 @@ namespace TaskService.Tests.Api
                 { "title", "newtitle" },
                 { "description", "description2" }
             };
-            var updateRequest = new HttpRequestMessage(HttpMethod.Put, ApiRoutes.Tasks.Update.Replace("{id}", task.PublicId));
+            var updateRequest = new HttpRequestMessage(HttpMethod.Put, ApiRoutes.Tasks.Promotion.Update.Replace("{id}", task.PublicId));
             updateRequest.Content = JsonContent.Create(formUpdateModel);
 
             // Act
@@ -155,7 +153,7 @@ namespace TaskService.Tests.Api
                 { "title", "newtitle" },
                 { "description", "description2" }
             };
-            var updateRequest = new HttpRequestMessage(HttpMethod.Put, ApiRoutes.Tasks.Update.Replace("{id}", task.PublicId));
+            var updateRequest = new HttpRequestMessage(HttpMethod.Put, ApiRoutes.Tasks.Promotion.Update.Replace("{id}", task.PublicId));
             updateRequest.Content = JsonContent.Create(formUpdateModel);
 
             // Act
@@ -185,7 +183,7 @@ namespace TaskService.Tests.Api
                 { "title", "newtitle" },
                 { "description", "description2" }
             };
-            var updateRequest = new HttpRequestMessage(HttpMethod.Put, ApiRoutes.Tasks.Update.Replace("{id}", "non-existing-id"));
+            var updateRequest = new HttpRequestMessage(HttpMethod.Put, ApiRoutes.Tasks.Promotion.Update.Replace("{id}", "non-existing-id"));
             updateRequest.Content = JsonContent.Create(formUpdateModel);
 
             // Act
@@ -215,7 +213,7 @@ namespace TaskService.Tests.Api
                 { "title", "newtitle" },
                 { "description", "description2" }
             };
-            var updateRequest = new HttpRequestMessage(HttpMethod.Put, ApiRoutes.Tasks.Update.Replace("{id}", task.PublicId));
+            var updateRequest = new HttpRequestMessage(HttpMethod.Put, ApiRoutes.Tasks.Promotion.Update.Replace("{id}", task.PublicId));
             updateRequest.Content = JsonContent.Create(formUpdateModel);
 
             // Act
@@ -225,7 +223,7 @@ namespace TaskService.Tests.Api
             // Assert
             Assert.NotNull(response);
             response.EnsureSuccessStatusCode();
-            var updatedTask = await response.Content.ReadAsAsync<TaskReadDto>();
+            var updatedTask = await response.Content.ReadAsAsync<PromotionTaskDto>();
             updatedTask.Should().NotBeNull();
             Assert.Equal(formUpdateModel["title"], updatedTask.Title);
             Assert.Equal(formUpdateModel["description"], updatedTask.Description);
@@ -239,7 +237,7 @@ namespace TaskService.Tests.Api
             Arrange(dbContext => { dbContext.Users.Add(user); });
             
             Arrange(dbContext => { dbContext.Tasks.Add(CreateTask("task123", user.Id)); });
-            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.GetById.Replace("{id}", "non-existing-task"));
+            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.Promotion.GetById.Replace("{id}", "non-existing-task"));
             
             // Act
             var response = await TestClient.SendAsync(request);
@@ -257,7 +255,7 @@ namespace TaskService.Tests.Api
             Arrange(dbContext => { dbContext.Users.Add(user); });
             
             Arrange(dbContext => { dbContext.Tasks.Add(CreateTask("task123", user.Id)); });
-            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.GetById.Replace("{id}", "non-existing-task"));
+            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.Promotion.GetById.Replace("{id}", "non-existing-task"));
             
             // Act
             AuthorizeRequestWithUser(request, user);
@@ -277,7 +275,7 @@ namespace TaskService.Tests.Api
 
             var task = CreateTask("task123", user.Id);
             Arrange(dbContext => { dbContext.Tasks.Add(task); });
-            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.GetById.Replace("{id}", task.PublicId));
+            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.Promotion.GetById.Replace("{id}", task.PublicId));
 
             // Act
             AuthorizeRequestWithUser(request, user);
@@ -286,39 +284,20 @@ namespace TaskService.Tests.Api
             // Assert
             Assert.NotNull(response);
             response.EnsureSuccessStatusCode();
-            var createdTask = await response.Content.ReadAsAsync<TaskReadDto>();
+            var createdTask = await response.Content.ReadAsAsync<PromotionTaskDto>();
             createdTask.Should().NotBeNull();
-            createdTask.Should().BeEquivalentTo(task.ToPublicDto());
+            createdTask.Should().BeEquivalentTo(Mapper.Map<PromotionTaskDto>(task));
         }
-        
+
         [Fact]
-        public async Task GetAll_with_basicUserToken_return_Forbidden()
+        public async Task GetUserTasks_withoutToken_return_Unauthorized()
         {
             // Arrange
             var user = CreateUser("user");
             Arrange(dbContext => { dbContext.Users.Add(user); });
             
             Arrange(dbContext => { dbContext.Tasks.Add(CreateTask("task123", user.Id)); });
-            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.GetAll);
-
-            // Act
-            AuthorizeRequestWithUser(request, user);
-            var response = await TestClient.SendAsync(request);
-
-            // Assert
-            Assert.NotNull(response);
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        }
-        
-        [Fact]
-        public async Task GetAll_withoutToken_return_Unauthorized()
-        {
-            // Arrange
-            var user = CreateUser("user");
-            Arrange(dbContext => { dbContext.Users.Add(user); });
-            
-            Arrange(dbContext => { dbContext.Tasks.Add(CreateTask("task123", user.Id)); });
-            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.GetAll);
+            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.Promotion.GetUserTasks);
 
             // Act
             var response = await TestClient.SendAsync(request);
@@ -329,30 +308,30 @@ namespace TaskService.Tests.Api
         }
 
         [Fact]
-        public async Task GetAll_with_adminUserToken_return_Ok_Tasks()
+        public async Task GetUserTasks_with_UserToken_return_Ok_Tasks()
         {
             // Arrange
-            var adminUser = CreateUser("user", Roles.Admin);
-            Arrange(dbContext => { dbContext.Users.Add(adminUser); });
+            var user = CreateUser("user");
+            Arrange(dbContext => { dbContext.Users.Add(user); });
             
             Arrange(dbContext =>
             {
                 dbContext.Tasks.AddRange(
-                    CreateTask("task1"),
-                    CreateTask("task2"),
-                    CreateTask("task3")
+                    CreateTask("task1", user.Id),
+                    CreateTask("task2", user.Id),
+                    CreateTask("task3", user.Id)
                 );
             });
 
-            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.GetAll);
+            var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Tasks.Promotion.GetUserTasks);
 
             // Act
-            AuthorizeRequestWithUser(request, adminUser);
+            AuthorizeRequestWithUser(request, user);
             var response = await TestClient.SendAsync(request);
 
             // Assert
             Assert.NotNull(response);
-            var tasks = await response.Content.ReadAsAsync<List<TaskReadDto>>();
+            var tasks = await response.Content.ReadAsAsync<List<PromotionTaskDto>>();
             tasks.Should().NotBeEmpty();
             Assert.Equal(3, tasks.Count);
         }

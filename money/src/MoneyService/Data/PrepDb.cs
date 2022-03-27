@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MoneyService.Data.Models;
+using MoneyService.Data.Models.External;
 
 namespace MoneyService.Data
 {
@@ -50,7 +51,6 @@ namespace MoneyService.Data
                 Lastname = "Admin",
                 PublicId = "cashflow-admin-user",
                 RefreshToken = null,
-                Gender = Genders.Male,
                 RoleId = (int)Roles.Admin
             };
 
@@ -62,7 +62,6 @@ namespace MoneyService.Data
                 Lastname = "Superadmin",
                 PublicId = "cashflow-superadmin-user",
                 RefreshToken = null,
-                Gender = Genders.Male,
                 RoleId = (int)Roles.SuperAdmin
             };
 

@@ -5,7 +5,6 @@ using System.Net.Http;
 using AccountService.Data;
 using AccountService.Dtos;
 using AccountService.Tests.Common;
-using AccountService.Util.AccountService.Util.Helpers;
 using Cashflow.Common.Data.Enums;
 using FluentAssertions;
 using Microsoft.Net.Http.Headers;
@@ -300,7 +299,7 @@ namespace AccountService.Tests.Api
             response.EnsureSuccessStatusCode();
             var userResponse = await response.Content.ReadAsAsync<UserReadDto>();
             userResponse.Should().NotBeNull();
-            userResponse.Should().BeEquivalentTo(user.ToPublicDto());
+            userResponse.Should().BeEquivalentTo(Mapper.Map<UserReadDto>(user));
         }
         
         [Fact]
@@ -554,7 +553,7 @@ namespace AccountService.Tests.Api
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var userResponse = await response.Content.ReadAsAsync<UserReadDto>();
             userResponse.Should().NotBeNull();
-            userResponse.Should().BeEquivalentTo(userToFind.ToPublicDto());
+            userResponse.Should().BeEquivalentTo(Mapper.Map<UserReadDto>(userToFind));
         }
         
         [Fact]

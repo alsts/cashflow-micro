@@ -2,19 +2,21 @@ using System;
 using AccountService.Data;
 using AccountService.Data.Repos;
 using AccountService.Data.Repos.Interfaces;
-using AccountService.Events;
+using AccountService.Events.Consumers;
+using AccountService.Events.Publishers;
+using AccountService.Events.Publishers.Interfaces;
 using AccountService.Services;
 using AccountService.Services.interfaces;
 using AccountService.Util.Jwt;
 using Cashflow.Common.Data.DataObjects;
+using Cashflow.Common.Events;
 using Cashflow.Common.Middlewares;
 using Cashflow.Common.Utils;
 using Cashflow.Common.Utils.Interfaces;
+using GreenPipes;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +24,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using MySqlConnector;
-using Newtonsoft.Json;
 
 namespace AccountService
 {
@@ -52,7 +53,14 @@ namespace AccountService
             {
                 logger.LogInformation("---> Using MySql Db");
                 var connectionString = GetMySqlDatabaseConnectionString();
-                services.AddDbContext<AppDbContext>(opt => opt.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+                services.AddDbContext<AppDbContext>(opt =>
+                    {
+                        opt.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), builder =>
+                        {
+                            builder.CommandTimeout(100);
+                            builder.EnableRetryOnFailure(5);
+                        });
+                    });
             }
             else
             {
@@ -60,18 +68,7 @@ namespace AccountService
                 services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
             }
 
-            logger.LogInformation("---> Using RabbitMQ");
-            services.AddMassTransit(x =>
-            {
-                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
-                {
-                    cfg.AutoStart = true;
-                    cfg.UseHealthCheck(provider);
-                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
-                        hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
-                }));
-            });
-            services.AddMassTransitHostedService();
+            ConfigureRabbitMq(services);
 
             var jwtSettings = new JwtSettings();
             Config.Bind("JwtSettings", jwtSettings);
@@ -82,7 +79,6 @@ namespace AccountService
             services.AddTransient<IUserRepo, UserRepo>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
-            services.AddScoped<MessageBusPublisher>();
 
             services.AddControllers();
             services.AddScoped<LoggedInUserDataHolder>();
@@ -153,13 +149,48 @@ namespace AccountService
             PrepDb.Seed(app, logger, env);
         }
 
+        private void ConfigureRabbitMq(IServiceCollection services)
+        {
+            logger.LogInformation("---> Using RabbitMQ");
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<UserBannedConsumer>();
+                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                {
+                    cfg.AutoStart = true;
+                    cfg.UseHealthCheck(provider);
+                    cfg.Host(new Uri($"rabbitmq://{Config["RabbitMQSettings:Host"]}"),
+                        hostConfigurator => { hostConfigurator.Heartbeat(TimeSpan.FromSeconds(5)); });
+                    
+                    // retry delivering messages from rabbitMQ:
+                    cfg.UseDelayedExchangeMessageScheduler();
+                    
+                    cfg.ReceiveEndpoint(Queue.Accounts.UserBanned, ep =>
+                    {
+                        ep.Exclusive = false;
+                        ep.AutoDelete = false;
+                        ep.Durable = true;
+                        ep.PrefetchCount = 16;
+                        ep.ConfigureConsumer<UserBannedConsumer>(provider);
+                        ep.UseDelayedRedelivery(r => r.Interval(10, TimeSpan.FromSeconds(10)));
+                    });
+                }));
+            });
+            
+            // inject services:
+            services.AddMassTransitHostedService();
+            services.AddScoped<UserBannedConsumer>();
+            services.AddScoped<IMessageBusPublisher, MessageBusPublisher>();
+        }
+
         private string GetMySqlDatabaseConnectionString()
         {
             return $"server={Config["DatabaseSettings:Url"]}; " +
                    $"port={Config["DatabaseSettings:Port"]}; " +
                    $"database={Config["DatabaseSettings:Name"]}; " +
                    $"user={Config["DatabaseSettings:User"]}; " +
-                   $"password={Config["DatabaseSettings:Password"]};";
+                   $"password={Config["DatabaseSettings:Password"]};" + 
+                   "connect timeout=100;";
         }
     }
 }

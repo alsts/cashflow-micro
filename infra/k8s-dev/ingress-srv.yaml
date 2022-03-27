@@ -17,7 +17,7 @@ spec:
                 name: accounts-clusterip-srv
                 port:
                   number: 80
-          - path: /api/tasks/?(.*)
+          - path: /api/(promotion|income)/tasks/?(.*)
             pathType: Prefix
             backend:
               service:

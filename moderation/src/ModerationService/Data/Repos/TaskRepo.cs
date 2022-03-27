@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ModerationService.Data.Repos.Interfaces;
-using TaskEntity = ModerationService.Data.Models.Task;
+using TaskEntity = ModerationService.Data.Models.External.Task;
+using TaskStatus = Cashflow.Common.Data.Enums.TaskStatus;
 
 namespace ModerationService.Data.Repos
 {
@@ -19,12 +21,12 @@ namespace ModerationService.Data.Repos
         {
             return await context.Tasks.FirstOrDefaultAsync(p => p.Id == id);
         }
-        
+
         public async Task<TaskEntity> GetByPublicId(string publicId)
         {
             return await context.Tasks.FirstOrDefaultAsync(p => p.PublicId == publicId);
         }
-        
+
         public async Task Save(TaskEntity task)
         {
             if (task.Id != 0)
@@ -35,13 +37,20 @@ namespace ModerationService.Data.Repos
             {
                 await context.Tasks.AddAsync(task);
             }
-            
+
             await SaveChanges();
         }
 
         public async Task<IEnumerable<TaskEntity>> GetAll()
         {
             return await context.Tasks.ToListAsync();
+        }
+
+        public async Task<IEnumerable<TaskEntity>> GetTasksPendingApproval()
+        {
+            return await context.Tasks
+                .Where(x => x.TaskStatus == TaskStatus.PendingApproval)
+                .ToListAsync();
         }
 
         private async Task<bool> SaveChanges()

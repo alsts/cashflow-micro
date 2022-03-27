@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using AutoFixture;
+using AutoMapper;
 using Cashflow.Common.Data.DataObjects;
 using Cashflow.Common.Data.Enums;
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TaskService.Data;
 using TaskService.Data.Models;
+using TaskService.Data.Models.External;
+using TaskService.Events.Publishers.Interfaces;
+using TaskService.Tests.Common.Stubs;
 using Xunit;
 using TaskEntity = TaskService.Data.Models.Task;
 
@@ -31,6 +35,7 @@ namespace TaskService.Tests.Common
         protected readonly HttpClient TestClient;
         protected readonly FakeJwtTokenCreator FakeJwtTokenCreator;
         public readonly IConfiguration Configuration;
+        public readonly IMapper Mapper;
 
         public IntegrationTestBase()
         {
@@ -38,13 +43,18 @@ namespace TaskService.Tests.Common
                 .WithWebHostBuilder(builder =>
                 {
                     builder
-                        .ConfigureServices(services => { })
+                        .ConfigureServices(services =>
+                        {
+                            // Add Mock of external services here:
+                            services.AddScoped<IMessageBusPublisher, FakeMessageBusPublisher>();
+                        })
                         .UseEnvironment("Testing");
                 });
 
             TestClient = appFactory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
             Configuration = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IConfiguration>();
             DbContext = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<TDbContext>();
+            Mapper = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<IMapper>();
 
             var jwtSettings = appFactory.Services.CreateScope().ServiceProvider.GetRequiredService<JwtSettings>();
             
@@ -93,7 +103,6 @@ namespace TaskService.Tests.Common
                 Lastname = username,
                 PublicId = Guid.NewGuid().ToString(),
                 RefreshToken = Guid.NewGuid().ToString(),
-                Gender = Genders.Male,
                 RoleId = (int)role
             };
         }

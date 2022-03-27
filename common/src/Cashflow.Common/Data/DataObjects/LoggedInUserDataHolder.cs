@@ -2,8 +2,8 @@
 {
     public class LoggedInUserDataHolder
     {
-        public string UserID { get; set; }
-        public int RoleID { get; set; }
+        public string UserId { get; set; }
+        public int RoleId { get; set; }
         public string RefreshToken { get; set; }
         public string IPAddress { get; set; }
     }

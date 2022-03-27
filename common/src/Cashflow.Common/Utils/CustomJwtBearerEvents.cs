@@ -39,8 +39,8 @@ namespace Cashflow.Common.Utils
             
             if (userIdClaimValue != null && roleIdClaimValue != null && refreshTokenClaimValue != null)
             {
-                loggedInUserDataHolder.UserID = userIdClaimValue;
-                loggedInUserDataHolder.RoleID = int.Parse(roleIdClaimValue);
+                loggedInUserDataHolder.UserId = userIdClaimValue;
+                loggedInUserDataHolder.RoleId = int.Parse(roleIdClaimValue);
                 loggedInUserDataHolder.RefreshToken = refreshTokenClaimValue;
             }
 
