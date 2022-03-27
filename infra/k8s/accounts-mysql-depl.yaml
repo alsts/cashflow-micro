@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: accounts-mysql
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: accounts-mysql
